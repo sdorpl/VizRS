@@ -1,6 +1,6 @@
 # Porządkowanie pakietu VizRS – diagnoza i plan
 
-> Stan na 2026-11-15, wersja 3: uwzględnia decyzje użytkownika D1–D6 z tego dnia.
+> Stan na 2026-11-15, wersja 4: uwzględnia decyzje użytkownika D1–D9 z tego dnia.
 > ✔ = sprawdzone przeze mnie w plikach; (agy) = tylko z raportu agy, bez sprawdzenia.
 
 ## Decyzje użytkownika (2026-11-15)
@@ -11,6 +11,9 @@
 - **D4. Panel nazywa się jak aplikacja: „VizRS CG Playout”.** Dopisek „powered by ErsatzTV” trafia tam, gdzie wymaga go licencja (§4.3: nie jest wymagany, rekomendowany w „O programie” i README).
 - **D5. Opis pakietu trafia do nowego repo `sdorpl/VizRS`** (ten plan i mapa pakietu).
 - **D6. AppImage panelu to natywna aplikacja sterowania**: klient panelu VizRS CG Playout na serwerze, a nie lokalna kopia panelu (§3.6).
+- **D7. Tryb samego panelu (bez grafiki) zostaje jako profil compose** (wariant c, §3.3).
+- **D8. Panel jest dostępny z zewnątrz przez proxy nginx z domeną i TLS** na każdym serwerze produkcyjnym (§3.6).
+- **D9. Poprawka AppImage wychodzi dopiero w połączonym produkcie** (pierwsze wydanie VizRS CG Playout z panelem), nie jako osobne wydanie VizRS Live.
 
 ---
 
@@ -111,7 +114,7 @@ VizRS CG Playout/
 | Wersja | sidecar 26.11.10, panel 26.11.10 (przypadkiem równe) | **jedna wersja** dla `vizrs-cg`, `vizrs-live`, mostu (`VizRS.Bridge.csproj`, stała w `Bridge.cs`) i okna. Pilnuje tego jeden test bramki |
 | Obrazy | `ghcr.io/sdorpl/vizrs-cg`, `vizrs-live`, `vizrs-live-legacy` | **nazwy obrazów bez zmian** (Portainer ich używa); budowane z jednego `release.yml` na jednym tagu |
 | Live API sidecara | styk między repo, z zasadą „starszy sąsiad nie psuje” | wewnętrzne API produktu; opis w `docs/API.md`. Zgodność wsteczną zachowujemy tylko na czas mieszanych wersji kontenerów w trakcie aktualizacji |
-| Compose | `docker-compose.live.yml` (CG Playout) ≡ `compose.cg-playout.yml` (Live) + `check-cg-overlay.sh` | jedna nakładka `docker-compose.live.yml`. Caddyfile zostaje wpisany w `configs:`, bo Portainer nie montuje plików z repo (do sprawdzenia w Portainerze). Samodzielny tryb panelu bez grafiki (`compose.yml` z Live) albo zostaje jako `docker-compose.panel-only.yml`, albo znika (decyzja) |
+| Compose | `docker-compose.live.yml` (CG Playout) ≡ `compose.cg-playout.yml` (Live) + `check-cg-overlay.sh` | jedna nakładka `docker-compose.live.yml`. Caddyfile zostaje wpisany w `configs:`, bo Portainer nie montuje plików z repo (do sprawdzenia w Portainerze). Tryb panelu bez grafiki (`compose.yml` z Live) – **profil compose** (D7): usługi grafiki (`vizrs`, `cg`, `ingest`, `seed`) w profilu `grafika`, włączanym w stosach z grafiką (`COMPOSE_PROFILES=grafika`, w Portainerze zmienna środowiska); bez profilu – ErsatzTV z mostem, proxy i panel. Do sprawdzenia: nakładka `vizrs-ffmpeg` w `ersatztv` tylko z profilem (bez sidecara zwykły ffmpeg) |
 | CI | CG Playout: `ci`, `release`, `stack-refresh`; Live: `ci`, `release`, `legacy-latest`, `drafts` | `ci.yml` z dwoma zadaniami (sidecar, panel) plus `release.yml` (binarki musl, 3 obrazy, AppImage panelu, SHA256). Bez zmian: `stack-refresh.yml` (z `vizrs-live` w `.release`), `legacy-latest.yml`, `drafts.yml` |
 | Nazwy w UI i paczkach | „VizRS Live”, AppImage `VizRS-Live-…` | **„VizRS CG Playout”** (D4): tytuł panelu i okna, AppImage `VizRS-CG-Playout-<wersja>-x86_64.AppImage`, binarka okna `vizrs-cg-playout`; w „O programie”: „powered by ErsatzTV”. Zmienne `VIZRS_LIVE_*` i nazwy obrazów zostają (stosy produkcyjne) |
 | Pozostałe repo | linki `../VizRS Live`, `../VirtRS CG Playout` (32 wystąpienia w .md/.sh/.yml) | linki do jednego `../VizRS CG Playout`; tabela pakietu z 3 aplikacjami |
@@ -158,11 +161,11 @@ VizRS CG Playout/
 ### 3.6 Aplikacja okienna: natywny klient sterowania (D6)
 
 - **Stan (2026-11-15):** AppImage `VizRS-Live-26.11.10` nie działał. Domyślnie uruchamiał „panel lokalny” (`vizrs-live` w paczce), który na stacji operatora bez ErsatzTV kończył się błędem „brak tokenu mostu” i spychał użytkownika do okna połączenia z mylącym komunikatem.
-- **Poprawka gotowa w kopii roboczej VizRS Live, bez commita:**
+- **Poprawka gotowa w kopii roboczej VizRS Live, bez commita; wychodzi w połączonym produkcie (D9):**
   - okno jest wyłącznie klientem panelu na serwerze: przy starcie zapisany panel, bez niego okno „Połącz z panelem”;
   - usunięte: tryb `local`, `--live`, `-- …`, `VIZRS_LIVE_BIN`, przycisk „Panel lokalny”, menu logów, `vizrs-live` w paczce (`tauri.bundle.json`, krok `release.yml`);
   - test `desktop/tests/okno.cjs`: 12/12; cargo clippy/test zielone; docs, CHANGELOG i CLAUDE.md zaktualizowane.
-- **Panel musi być osiągalny ze stacji operatora.** Port `8090` panelu na serwerze produkcyjnym jest wystawiony w Dockerze, ale z zewnątrz nie odpowiada (zapora / reguły sieci chmury). Potrzebny jest adres przez proxy TLS (np. Caddy z domeną, jak dla CG System) albo VPN / tunel SSH. To decyzja wdrożeniowa, do wpisania w RUNBOOK.
+- **Dostęp ze stacji operatora (D8):** panele produkcyjne są wystawione przez **proxy nginx z domeną i TLS** (osobna domena na serwer); port `8090` nie jest dostępny wprost z zewnątrz i nie musi być. Sprawdzone 2026-11-15: `/health` 200, `/api/status` bez tokenu i ze złym tokenem 401 na obu serwerach; poprawiony klient łączy się przez HTTPS i pokazuje „Panel odrzucił token.” dla złego tokenu. Operator wpisuje w oknie „Połącz z panelem” adres `https://<domena serwera>` i token panelu (`VIZRS_LIVE_TOKEN`). Do RUNBOOK połączonego produktu: przykład konfiguracji nginx (nagłówek `Authorization` przekazywany bez zmian, bez buforowania odpowiedzi strumieniowych – podgląd HLS).
 - **W połączonym produkcie:** `panel/desktop/` → aplikacja „VizRS CG Playout” (`vizrs-cg-playout`), okno „Połącz z VizRS CG Playout”, w „O programie” wersja klienta i panelu oraz „powered by ErsatzTV”.
 
 ---
@@ -271,19 +274,11 @@ Pakiet nie zawiera kodu ErsatzTV. VizRS Bridge kompiluje się względem jego bib
 | 3 | Zastosowanie wzorca w Artist, Live i CG Playout (w CG Playout: kopia AGENTS, nowy `docs/AGENCI.md`, uzupełnienie zasad wspólnych) | 3 repo | niskie |
 | 4 | Połączenie P0–P2 (§3.4) | CG Playout + Live | średnie (CI, obrazy) |
 | 5 | Połączenie P3, przełączenie produkcji s1/s2 | Portainer | **wysokie**, termin wybiera użytkownik |
-| 6 | P4: dokumentacja produktu, archiwizacja Live, linki, nazwa katalogu | wszystkie | niskie |
-| 0 | Wydanie poprawki AppImage (klient panelu, §3.6) jako VizRS Live 26.11.11 – po akceptacji diffu | Live | niskie |
+| 6 | P4: dokumentacja produktu, archiwizacja Live, linki, nazwa katalogu; pierwsze wydanie połączonego produktu z poprawionym klientem okna (D9) | wszystkie | niskie |
 | 7 | Opis pakietu w repo `sdorpl/VizRS` (D5); w każdym repo DOKUMENTACJA §1 i README skrócone do linku | VizRS + wszystkie | niskie |
 
 Kroki 2–3 warto zrobić **przed** połączeniem. Połączone repo dostanie wtedy gotowe zasady, a `docs/AGENCI.md` CG Playout przestanie zależeć od repo, które znika.
 
 ## 6. Otwarte pytania do użytkownika
 
-1. **Tryb samego panelu (ErsatzTV + panel, bez grafiki VizRS)** – dziś `compose.yml` VizRS Live stawia tylko `ersatztv` z mostem, `proxy` i `live`, bez `vizrs`, `cg` i `ingest`. Służy kanałom bez grafiki (mniej CPU: bez Chromium i nakładki ffmpeg). Po połączeniu stos bazowy CG Playout zawsze ma grafikę. Do wyboru:
-   - (a) usunąć ten tryb (rekomendacja, jeśli żaden kanał go dziś nie używa: jeden stos, mniej do testowania);
-   - (b) zostawić jako `docker-compose.panel-only.yml`;
-   - (c) zostawić przez profile compose (`--profile grafika`).
-2. **Dostęp do panelu z zewnątrz:** domena z TLS przez Caddy czy VPN / tunel (§3.6)?
-3. Czy wydać poprawkę AppImage od razu jako VizRS Live 26.11.11, czy dopiero w połączonym produkcie?
-
-Rozstrzygnięte: nazwa panelu (D4), miejsce opisu pakietu (D5), licencja i właściciel (D3), rola AppImage (D6).
+Brak otwartych pytań – rozstrzygnięte D1–D9. Następny krok według §5: kroki 1, 1b, 2–3 (poprawki dokumentacji, licencja, ujednolicenie zasad agentów), potem połączenie P0–P2.
