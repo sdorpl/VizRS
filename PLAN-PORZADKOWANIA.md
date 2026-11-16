@@ -279,6 +279,11 @@ Pakiet nie zawiera kodu ErsatzTV. VizRS Bridge kompiluje się względem jego bib
 
 Kroki 2–3 warto zrobić **przed** połączeniem. Połączone repo dostanie wtedy gotowe zasady, a `docs/AGENCI.md` CG Playout przestanie zależeć od repo, które znika.
 
+## 6. Otwarte pytania do użytkownika
+
+1. Termin P3 (zmiana `COMPOSE_PROFILES` w Portainerze, scalenie, tag) – §7.
+2. Obrazy panelu w nakładce: zostają przypięte do wydania (podnoszone commitem), czy `:latest` jak `vizrs-cg` (wtedy `stack-refresh` przeładuje też panel; uwaga: obraz legacy z mostem bierze nowsze legacy, które migruje bazę – kopia `etv-config` przed każdą aktualizacją).
+
 ## 7. Stan realizacji (2026-11-16)
 
 | # (§5) | Stan |
@@ -297,8 +302,3 @@ Kroki 2–3 warto zrobić **przed** połączeniem. Połączone repo dostanie wte
 - Wdrożenie sidecara (Docker, Ampere, GPU, stosy s1/s2, `.release`) zostaje w DOKUMENTACJI §4; `docs/RUNBOOK.md` (dawny RUNBOOK panelu, dla całego produktu) odsyła tam zamiast kopiować.
 - Historia panelu – na końcu `CHANGELOG.md` („Historia panelu”); nowy plik nie powstał.
 - `stack-refresh` śledzi `vizrs-cg` i `vizrs` (obrazy panelu przypięte w nakładce, podnoszone commitem po wydaniu); dodanie `vizrs-live` do `.release` niczego by nie przeładowało – decyzja o automacie dla panelu do podjęcia po pierwszym wspólnym wydaniu.
-
-## 6. Otwarte pytania do użytkownika
-
-1. Termin P3 (zmiana `COMPOSE_PROFILES` w Portainerze, scalenie, tag) – §7.
-2. Obrazy panelu w nakładce: zostają przypięte do wydania (podnoszone commitem), czy `:latest` jak `vizrs-cg` (wtedy `stack-refresh` przeładuje też panel; uwaga: obraz legacy z mostem bierze nowsze legacy, które migruje bazę – kopia `etv-config` przed każdą aktualizacją).
