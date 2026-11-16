@@ -1,6 +1,6 @@
 # Porządkowanie pakietu VizRS – diagnoza i plan
 
-> Stan na 2026-11-15, wersja 4: uwzględnia decyzje użytkownika D1–D9 z tego dnia.
+> Stan na 2026-11-16, wersja 5: decyzje użytkownika D1–D9 (2026-11-15) i stan realizacji (§7).
 > ✔ = sprawdzone przeze mnie w plikach; (agy) = tylko z raportu agy, bez sprawdzenia.
 
 ## Decyzje użytkownika (2026-11-15)
@@ -279,6 +279,26 @@ Pakiet nie zawiera kodu ErsatzTV. VizRS Bridge kompiluje się względem jego bib
 
 Kroki 2–3 warto zrobić **przed** połączeniem. Połączone repo dostanie wtedy gotowe zasady, a `docs/AGENCI.md` CG Playout przestanie zależeć od repo, które znika.
 
+## 7. Stan realizacji (2026-11-16)
+
+| # (§5) | Stan |
+|---|---|
+| 1, 1b | zrobione we wszystkich repo (`main`): wersje w docs, licencja MIT, `LICENSE`, `THIRD-PARTY.md`, etykieta OCI `vizrs-live-legacy`, koniec zasad ffPlayout |
+| 2, 3 | zrobione: wspólne bloki CLAUDE.md (A–D), `GEMINI.md`, `docs/AGENCI.md`, `AGENTS.md` jako kopia, `tools/sync-zasady.sh --check` w CI każdego repo |
+| 4 (P0–P2) | zrobione na gałęzi `polaczenie-live` w CG Playout: P1 – panel w `panel/` z historią; P2 – profile compose `grafika`/`ingest` (D7), jedna nakładka `docker-compose.live.yml`, jedno `release.yml` z kontrolą jednej wersji, nazwa „VizRS CG Playout” (D4); wersja 26.11.11 przygotowana; CI zielone |
+| 6 (część: dokumentacja) | zrobione na tej samej gałęzi (§3.5, z korektami niżej) |
+| 5 (P3) | **czeka na użytkownika** |
+| 6 (reszta), 7 | po P3 |
+
+**P3 – warunek przed scaleniem do `main`:** stosy Portainera (stos 7 – s1, stos 11 – s2, oba zarządzane z Portainera na s1) mają dziś `COMPOSE_PROFILES=ingest`. Z tą wartością nowy `docker-compose.yml` jest odrzucany (`ingest` zależy od `cg`, który jest w profilu `grafika`), więc stos przestałby się aktualizować; z pustą wartością zniknęłaby grafika. Wartość `grafika,ingest` działa też ze starym compose (sprawdzone `docker compose config`), więc zmienia się ją **przed** scaleniem. Kolejność: zmiana zmiennej → scalenie → tag `v26.11.11-test.1`, potem `v26.11.11` → commit z nowymi tagami obrazów panelu w `docker-compose.live.yml` (dziś przypięte 26.11.8; zmiana przed publikacją obrazów zatrzymałaby Portainera na `pull`).
+
+**Korekty §3.5 przy wykonaniu:**
+- Numeracja DOKUMENTACJI sidecara (§1–§8) zostaje – ok. 70 odnośników „DOKUMENTACJA §N” w kodzie i zasadach; panel dochodzi jako §9–§15 (testy panelu – podsekcja §7), odnośniki w kodzie panelu przeliczone.
+- Wdrożenie sidecara (Docker, Ampere, GPU, stosy s1/s2, `.release`) zostaje w DOKUMENTACJI §4; `docs/RUNBOOK.md` (dawny RUNBOOK panelu, dla całego produktu) odsyła tam zamiast kopiować.
+- Historia panelu – na końcu `CHANGELOG.md` („Historia panelu”); nowy plik nie powstał.
+- `stack-refresh` śledzi `vizrs-cg` i `vizrs` (obrazy panelu przypięte w nakładce, podnoszone commitem po wydaniu); dodanie `vizrs-live` do `.release` niczego by nie przeładowało – decyzja o automacie dla panelu do podjęcia po pierwszym wspólnym wydaniu.
+
 ## 6. Otwarte pytania do użytkownika
 
-Brak otwartych pytań – rozstrzygnięte D1–D9. Następny krok według §5: kroki 1, 1b, 2–3 (poprawki dokumentacji, licencja, ujednolicenie zasad agentów), potem połączenie P0–P2.
+1. Termin P3 (zmiana `COMPOSE_PROFILES` w Portainerze, scalenie, tag) – §7.
+2. Obrazy panelu w nakładce: zostają przypięte do wydania (podnoszone commitem), czy `:latest` jak `vizrs-cg` (wtedy `stack-refresh` przeładuje też panel; uwaga: obraz legacy z mostem bierze nowsze legacy, które migruje bazę – kopia `etv-config` przed każdą aktualizacją).
