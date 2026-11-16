@@ -1,6 +1,6 @@
 # Porządkowanie pakietu VizRS – diagnoza i plan
 
-> Stan na 2026-11-16, wersja 6 (po P3): decyzje użytkownika D1–D9 (2026-11-15) i stan realizacji (§7).
+> Stan na 2026-11-16, wersja 7 (po P4): decyzje użytkownika D1–D9 (2026-11-15) i stan realizacji (§7).
 > ✔ = sprawdzone przeze mnie w plikach; (agy) = tylko z raportu agy, bez sprawdzenia.
 
 ## Decyzje użytkownika (2026-11-15)
@@ -282,7 +282,7 @@ Kroki 2–3 warto zrobić **przed** połączeniem. Połączone repo dostanie wte
 
 ## 6. Otwarte pytania do użytkownika
 
-Brak – P3 zrobione. Zostaje P4: archiwizacja `sdorpl/VizRS-Live-Playout`, zmiana nazwy katalogu `VirtRS CG Playout`, komentarze „VizRS Live” w plikach kopiowanych (sync we wszystkich repo naraz).
+Brak – P3 i P4 zrobione (2026-11-16). Poza planem: lokalny stos `virtrs` ma w `.env` starą nakładkę i brak `COMPOSE_PROFILES` (STATUS CG Playout).
 
 ## 7. Stan realizacji (2026-11-16)
 
@@ -295,7 +295,7 @@ Brak – P3 zrobione. Zostaje P4: archiwizacja `sdorpl/VizRS-Live-Playout`, zmia
 | 6 (część: linki i zasady) | zrobione: tabela „Pakiet VizRS” z trzema aplikacjami w bloku A (CG System 5534a4d, zsynchronizowana do Artist, Live i gałęzi CG Playout), README i DOKUMENTACJA §1 CG System i Artist; obrazy panelu z `:latest` (D10) |
 | 7 (część) | zrobione: `STYKI.md`, `ZGODNOSC.md`, README pakietu po połączeniu |
 | 5 (P3) | zrobione 2026-11-16: `COMPOSE_PROFILES=grafika,ingest` i „Re-pull image” w stosach 7 i 11 (API Portainera), kopie `etv-config` (`~/vizrs-kopie/etv-config-2026-11-16-przed-p3/` na s1 i s2), scalenie do `main`, wydanie **26.11.11** (`stack-refresh` → s1 i s2 na 26.11.11, bez migracji bazy) |
-| 6 (reszta), 7 | po P3 |
+| 6 (reszta: P4) | zrobione 2026-11-16: repo `sdorpl/VizRS-Live-Playout` zarchiwizowane (notka w README), katalog `VirtRS CG Playout` → `VizRS CG Playout`, kopie `gpu.rs`/`scale.rs`/`screen.rs`/`vizrs-ui.css` i zasady z CG System 639f80f, CI panelu tylko na `main` |
 
 **P3 – warunek przed scaleniem do `main`:** stosy Portainera (stos 7 – s1, stos 11 – s2, oba zarządzane z Portainera na s1) mają dziś `COMPOSE_PROFILES=ingest`. Z tą wartością nowy `docker-compose.yml` jest odrzucany (`ingest` zależy od `cg`, który jest w profilu `grafika`), więc stos przestałby się aktualizować; z pustą wartością zniknęłaby grafika. Wartość `grafika,ingest` działa też ze starym compose (sprawdzone `docker compose config`), więc zmienia się ją **przed** scaleniem. Kolejność: zmiana zmiennej → scalenie → tag `v26.11.11-test.1`, potem `v26.11.11` (D10: obrazy panelu z `:latest` – scalenie przeniesie s1/s2 z panelu 26.11.8 na obecny `:latest` = 26.11.10, z tą samą warstwą ErsatzTV legacy co 26.11.8, więc bez migracji bazy; wydanie 26.11.11 buduje legacy z mostem na najnowszym legacy – przed tagiem kopia `etv-config`).
 

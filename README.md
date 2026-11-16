@@ -19,7 +19,7 @@ Dawne osobne repozytorium [VizRS-Live-Playout](https://github.com/sdorpl/VizRS-L
 |---|---|---|---|---|
 | **VizRS CG System** | `VizRS CG System` · `sdorpl/VizRS-CG-System` | 26.11.8 | **Silnik grafiki**: trzyma show (sceny, strony), prowadzi stan anteny (TAKE/OUT/UPDATE…), podaje Trio (playout stron) i przezroczyste wyjście `/output` 1920×1080 | operator grafiki (Trio), OBS/vMix, pozostałe aplikacje |
 | **VizRS CG Artist** | `VizRS CG Artist` · `sdorpl/VizRS-CG-Artist` | 26.11.9 | **Edytor scen i animacji** (desktop, Tauri 2). Działa bez serwera, sceny wysyła (deploy) na serwer `vizrs` albo do paczek `.cgpack` | grafik |
-| **VizRS CG Playout** | `VirtRS CG Playout` · `sdorpl/VizRS-CG-Playout` (dawniej VirtRS) | 26.11.10 (26.11.11 przygotowana) | **Automatyka emisji i panel kanału (MCR)**: sidecar obok ErsatzTV (`vizrs-cg` + nakładka `vizrs-ffmpeg` wtapiająca `/output`, live ingest RTMP/SRT takeover, Live API), zintegrowany panel kanału w `panel/` (`vizrs-live` nad ErsatzTV legacy z mostem VizRS Bridge: ramówka, media, EPG, mozaika, as-run, sloty live) oraz okno desktopowe Tauri. Wchłonął dawne osobne repozytorium VizRS Live | automatyka kanału, operator emisji, planista, administrator |
+| **VizRS CG Playout** | `VizRS CG Playout` · `sdorpl/VizRS-CG-Playout` (dawniej VirtRS) | 26.11.11 | **Automatyka emisji i panel kanału (MCR)**: sidecar obok ErsatzTV (`vizrs-cg` + nakładka `vizrs-ffmpeg` wtapiająca `/output`, live ingest RTMP/SRT takeover, Live API), zintegrowany panel kanału w `panel/` (`vizrs-live` nad ErsatzTV legacy z mostem VizRS Bridge: ramówka, media, EPG, mozaika, as-run, sloty live) oraz okno desktopowe Tauri. Wchłonął dawne osobne repozytorium VizRS Live | automatyka kanału, operator emisji, planista, administrator |
 
 Zewnętrzny, **niezmieniany** składnik stosu: **ErsatzTV legacy** (.NET; baza, skaner, planowanie, transkodowanie HLS/TS).
 Dawne osobne repozytorium VizRS Live (`sdorpl/VizRS-Live-Playout`) tworzy obecnie podkatalog `panel/` w CG Playout i po zakończeniu migracji zostanie zarchiwizowane.
@@ -110,7 +110,7 @@ docker-compose.yml               seed · vizrs (CG System, :8788→8088) · cg (
 
 Obrazy produkcyjne w stosie: `vizrs`, `vizrs-cg`, `vizrs-seed`, `vizrs-live`, `vizrs-live-legacy` – wszystkie z tagiem `:latest` (decyzja D10 z 2026-11-16).
 
-Portainer GitOps (s1/s2) bierze stos z `main` CG Playout; `stack-refresh.yml` co 15 min aktualizuje `.release` (wersje obrazów), co przeładowuje stosy. Profile compose: `grafika` (silnik VizRS i sidecar), `ingest` (odbiorniki live, wymaga `grafika`); bez profilu – sam ErsatzTV z panelem. Stosy z grafiką potrzebują `COMPOSE_PROFILES=grafika,ingest` (dziś mają `ingest` – zmiana to warunek P3).
+Portainer GitOps (s1/s2) bierze stos z `main` CG Playout; `stack-refresh.yml` co 15 min aktualizuje `.release` (wersje obrazów), co przeładowuje stosy. Profile compose: `grafika` (silnik VizRS i sidecar), `ingest` (odbiorniki live, wymaga `grafika`); bez profilu – sam ErsatzTV z panelem. Stosy z grafiką mają `COMPOSE_PROFILES=grafika,ingest` i włączone „Re-pull image” (od 2026-11-16).
 
 Porty: **8088** CG System (w stosie wystawiony jako 8788) · **6100** TCP VizRS · **7700** sidecar · **8090** panel · **8409** widzowie (Caddy) · **1936–1943** RTMP · **9000–9007/udp** SRT · Artist: tylko `127.0.0.1:20000–31999`.
 
@@ -140,14 +140,11 @@ Dawne osobne repozytorium VizRS Live zostało wchłonięte do CG Playout. Live A
 
 ### Status realizacji (szczegóły: [PLAN-PORZADKOWANIA.md §7](PLAN-PORZADKOWANIA.md#7-stan-realizacji-2026-11-16))
 
-- **Zrobione (na gałęzi `polaczenie-live` w repozytorium CG Playout):**
-  - **P1**: przeniesienie panelu do podkatalogu `panel/` (kod serwera `vizrs-live`, UI, desktop Tauri, most VizRS Bridge C#).
-  - **P2**: ujednolicenie stosu compose pod profile `grafika` i `ingest`, jedna wspólna nakładka `docker-compose.live.yml` (zastąpienie kopii z Live), jedno `release.yml`, przygotowana wersja 26.11.11, obrazy produkcyjne z tagiem `:latest` (decyzja D10).
-  - **Dokumentacja produktu**: scalona w repozytorium CG Playout – [`docs/DOKUMENTACJA.md`](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/DOKUMENTACJA.md) (sidecar §1–§8, panel §9–§15), [`docs/API.md`](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/API.md) (§1 Live API sidecara, §2 API panelu, §3 API mostu), [`docs/RUNBOOK.md`](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/RUNBOOK.md) oraz instrukcja operatora.
-- **Czeka na wdrożenie (krok P3 – decyzja użytkownika):**
-  - Konfiguracja Portainera (`COMPOSE_PROFILES=grafika,ingest`).
-  - Scalenie gałęzi `polaczenie-live` do `main` w `sdorpl/VizRS-CG-Playout`.
-  - Nadanie tagu `v26.11.11` i archiwizacja dawnego repozytorium `sdorpl/VizRS-Live-Playout`.
+Połączenie zakończone 2026-11-16:
+- **P1–P2**: panel w `panel/` repozytorium CG Playout (z historią), jeden stos compose z profilami `grafika`/`ingest`, jedna nakładka `docker-compose.live.yml`, jedno `release.yml` z jedną wersją produktu.
+- **Dokumentacja produktu**: [`docs/DOKUMENTACJA.md`](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/DOKUMENTACJA.md) (sidecar §1–§8, panel §9–§15), [`docs/API.md`](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/API.md), RUNBOOK, INSTRUKCJA.
+- **P3**: stosy s1 i s2 przełączone (Portainer: `COMPOSE_PROFILES=grafika,ingest`, „Re-pull image”), pierwsze wspólne wydanie **26.11.11** na obu serwerach.
+- **P4**: repo `sdorpl/VizRS-Live-Playout` zarchiwizowane, katalog lokalny `VizRS CG Playout` (dawniej `VirtRS CG Playout`), kopie wspólnego kodu i zasad bez odwołań do VizRS Live.
 
 ## Licencja
 
