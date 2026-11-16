@@ -14,6 +14,7 @@
 - **D7. Tryb samego panelu (bez grafiki) zostaje jako profil compose** (wariant c, §3.3).
 - **D8. Panel jest dostępny z zewnątrz przez proxy nginx z domeną i TLS** na każdym serwerze produkcyjnym (§3.6).
 - **D9. Poprawka AppImage wychodzi dopiero w połączonym produkcie** (pierwsze wydanie VizRS CG Playout z panelem), nie jako osobne wydanie VizRS Live.
+- **D10 (2026-11-16). Obrazy panelu w stosie idą z `:latest`**, jak `vizrs-cg`: `vizrs-live` i `vizrs-live-legacy` w `docker-compose.live.yml`; wydanie produktu przesuwa `:latest` wszystkich obrazów, a `stack-refresh` (`.release`) przeładowuje stosy.
 
 ---
 
@@ -282,7 +283,6 @@ Kroki 2–3 warto zrobić **przed** połączeniem. Połączone repo dostanie wte
 ## 6. Otwarte pytania do użytkownika
 
 1. Termin P3 (zmiana `COMPOSE_PROFILES` w Portainerze, scalenie, tag) – §7.
-2. Obrazy panelu w nakładce: zostają przypięte do wydania (podnoszone commitem), czy `:latest` jak `vizrs-cg` (wtedy `stack-refresh` przeładuje też panel; uwaga: obraz legacy z mostem bierze nowsze legacy, które migruje bazę – kopia `etv-config` przed każdą aktualizacją).
 
 ## 7. Stan realizacji (2026-11-16)
 
@@ -292,13 +292,15 @@ Kroki 2–3 warto zrobić **przed** połączeniem. Połączone repo dostanie wte
 | 2, 3 | zrobione: wspólne bloki CLAUDE.md (A–D), `GEMINI.md`, `docs/AGENCI.md`, `AGENTS.md` jako kopia, `tools/sync-zasady.sh --check` w CI każdego repo |
 | 4 (P0–P2) | zrobione na gałęzi `polaczenie-live` w CG Playout: P1 – panel w `panel/` z historią; P2 – profile compose `grafika`/`ingest` (D7), jedna nakładka `docker-compose.live.yml`, jedno `release.yml` z kontrolą jednej wersji, nazwa „VizRS CG Playout” (D4); wersja 26.11.11 przygotowana; CI zielone |
 | 6 (część: dokumentacja) | zrobione na tej samej gałęzi (§3.5, z korektami niżej) |
+| 6 (część: linki i zasady) | zrobione: tabela „Pakiet VizRS” z trzema aplikacjami w bloku A (CG System 5534a4d, zsynchronizowana do Artist, Live i gałęzi CG Playout), README i DOKUMENTACJA §1 CG System i Artist; obrazy panelu z `:latest` (D10) |
+| 7 (część) | zrobione: `STYKI.md`, `ZGODNOSC.md`, README pakietu po połączeniu |
 | 5 (P3) | **czeka na użytkownika** |
 | 6 (reszta), 7 | po P3 |
 
-**P3 – warunek przed scaleniem do `main`:** stosy Portainera (stos 7 – s1, stos 11 – s2, oba zarządzane z Portainera na s1) mają dziś `COMPOSE_PROFILES=ingest`. Z tą wartością nowy `docker-compose.yml` jest odrzucany (`ingest` zależy od `cg`, który jest w profilu `grafika`), więc stos przestałby się aktualizować; z pustą wartością zniknęłaby grafika. Wartość `grafika,ingest` działa też ze starym compose (sprawdzone `docker compose config`), więc zmienia się ją **przed** scaleniem. Kolejność: zmiana zmiennej → scalenie → tag `v26.11.11-test.1`, potem `v26.11.11` → commit z nowymi tagami obrazów panelu w `docker-compose.live.yml` (dziś przypięte 26.11.8; zmiana przed publikacją obrazów zatrzymałaby Portainera na `pull`).
+**P3 – warunek przed scaleniem do `main`:** stosy Portainera (stos 7 – s1, stos 11 – s2, oba zarządzane z Portainera na s1) mają dziś `COMPOSE_PROFILES=ingest`. Z tą wartością nowy `docker-compose.yml` jest odrzucany (`ingest` zależy od `cg`, który jest w profilu `grafika`), więc stos przestałby się aktualizować; z pustą wartością zniknęłaby grafika. Wartość `grafika,ingest` działa też ze starym compose (sprawdzone `docker compose config`), więc zmienia się ją **przed** scaleniem. Kolejność: zmiana zmiennej → scalenie → tag `v26.11.11-test.1`, potem `v26.11.11` (D10: obrazy panelu z `:latest` – scalenie przeniesie s1/s2 z panelu 26.11.8 na obecny `:latest` = 26.11.10, z tą samą warstwą ErsatzTV legacy co 26.11.8, więc bez migracji bazy; wydanie 26.11.11 buduje legacy z mostem na najnowszym legacy – przed tagiem kopia `etv-config`).
 
 **Korekty §3.5 przy wykonaniu:**
 - Numeracja DOKUMENTACJI sidecara (§1–§8) zostaje – ok. 70 odnośników „DOKUMENTACJA §N” w kodzie i zasadach; panel dochodzi jako §9–§15 (testy panelu – podsekcja §7), odnośniki w kodzie panelu przeliczone.
 - Wdrożenie sidecara (Docker, Ampere, GPU, stosy s1/s2, `.release`) zostaje w DOKUMENTACJI §4; `docs/RUNBOOK.md` (dawny RUNBOOK panelu, dla całego produktu) odsyła tam zamiast kopiować.
 - Historia panelu – na końcu `CHANGELOG.md` („Historia panelu”); nowy plik nie powstał.
-- `stack-refresh` śledzi `vizrs-cg` i `vizrs` (obrazy panelu przypięte w nakładce, podnoszone commitem po wydaniu); dodanie `vizrs-live` do `.release` niczego by nie przeładowało – decyzja o automacie dla panelu do podjęcia po pierwszym wspólnym wydaniu.
+- `stack-refresh` śledzi `vizrs-cg` i `vizrs`; od wspólnego wydania wersja `vizrs-cg` = wersja panelu, więc ten sam wiersz `.release` przeładowuje też panel (D10) – osobny wiersz `vizrs-live` niepotrzebny.

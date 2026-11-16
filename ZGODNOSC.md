@@ -1,0 +1,36 @@
+# Zgodność wydań pakietu VizRS
+
+Tabela jest aktualizowana przy każdym wydaniu aplikacji pakietu VizRS; wszystkie aplikacje w bieżących wersjach działają razem zgodnie z zasadami pakietu.
+
+## Bieżące wersje
+
+| Aplikacja | Ostatnie wydanie | Data | Obrazy / paczki |
+|---|---|---|---|
+| **VizRS CG System** (`sdorpl/VizRS-CG-System`) | 26.11.8 | 2026-11-14 | Obraz Docker: `ghcr.io/sdorpl/vizrs:26.11.8` oraz `:latest` (amd64, arm64). Paczki okna Trio: `VizRS-Trio-26.11.8-x86_64.AppImage`, `vizrs_26.11.8_amd64.deb`, `VizRS-Trio-26.11.8-windows-x86_64-setup.exe`. Archiwa binarne (`vizrs`, `vizrs-app`, `vizrs-shell`): Windows (`.zip`), macOS (`.tar.gz`), Linux (`.tar.gz`). |
+| **VizRS CG Artist** (`sdorpl/VizRS-CG-Artist`) | 26.11.9 | 2026-11-14 | Paczki instalacyjne Tauri (bez obrazu Docker): Linux (`.deb`, `.rpm`, `.AppImage`), Windows (`.msi`, instalator NSIS `.exe`), macOS (`.dmg`). |
+| **VizRS CG Playout** (`sdorpl/VizRS-CG-Playout`) | 26.11.10 | 2026-11-14 | Obrazy Docker: `ghcr.io/sdorpl/vizrs-cg:26.11.10` oraz `:latest`, `ghcr.io/sdorpl/vizrs-seed:26.11.10` oraz `:latest` (amd64, arm64). Archiwa binarne: `VizRS-CG-Playout-26.11.10-linux-x86_64.tar.gz`, `VizRS-CG-Playout-26.11.10-linux-arm64.tar.gz`. |
+| **VizRS CG Playout** (po połączeniu z panelem) | 26.11.11 | niewydana | Przygotowane pierwsze wspólne wydanie z panelem (`panel/`). Obrazy Docker: `ghcr.io/sdorpl/vizrs-cg:26.11.11`, `ghcr.io/sdorpl/vizrs-seed:26.11.11`, `ghcr.io/sdorpl/vizrs-live:26.11.11`, `ghcr.io/sdorpl/vizrs-live-legacy:26.11.11` oraz `:latest` (amd64, arm64). Paczka okna panelu: `VizRS-CG-Playout-26.11.11-x86_64.AppImage`. Archiwa binarne: `VizRS-CG-Playout-26.11.11-linux-{x86_64,arm64}.tar.gz`. |
+| **VizRS Live** (`sdorpl/VizRS-Live-Playout`, dawne repo do archiwizacji) | 26.11.10 | 2026-11-14 | Ostatnie wydanie przed połączeniem z CG Playout. Obrazy Docker: `ghcr.io/sdorpl/vizrs-live:26.11.10`, `ghcr.io/sdorpl/vizrs-live-legacy:26.11.10` (amd64, arm64). Paczka okna: `VizRS-Live-26.11.10-x86_64.AppImage`; archiwa `VizRS-Live-26.11.10-linux-{x86_64,arm64}.tar.gz`. |
+
+## Minimalne wersje sąsiadów
+
+| Aplikacja (wersja) | Wymaga | Dlaczego | Źródło |
+|---|---|---|---|
+| **VizRS CG Playout** (26.11.10 / 26.11.11) | VizRS CG System ≥ 26.11.3 | Wartość argumentu `ARG VIZRS_REF=v26.11.3` w `Dockerfile`: klonowanie i kompilacja renderera natywnego `vizrs-render` w obrazie kontenera sidecara. | [Dockerfile](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/Dockerfile) |
+| **VizRS CG Playout** (≥ 26.11.3) | VizRS CG System ≥ 26.11.2 | Pobieranie granic stron ze statycznej analizy scen (`vizrs-render bounds`) dla wyliczania stref grafiki nakładki ffmpeg; starszy renderer nie posiada podkomendy `bounds`. | [docs/DOKUMENTACJA.md](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/DOKUMENTACJA.md), [CHANGELOG.md](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/CHANGELOG.md) |
+| **VizRS CG Playout** (≥ 26.11.1) | VizRS CG System (`vizrs-render`) ≥ 26.11.1 | Obsługa flagi `p` i łatek prostokąta grafiki w klatce `stream` w rendererze natywnym dla zachowania płynności 50 kl./s. | [docs/DOKUMENTACJA.md](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/DOKUMENTACJA.md) |
+| **VizRS CG Playout** (26.11.4) | VizRS CG System ≥ 26.11.3 | Generowanie miniatur stron (`vizrs-render thumb`) dla panelu przez endpoint `GET /api/live/thumbs/<numer>.png`. | [CHANGELOG.md](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/CHANGELOG.md) |
+| **VizRS CG Playout** (z `channel_buses=1`) | VizRS CG System z antenami kanałów | Obsługa niezależnego stanu on-air i wyjścia dla każdego kanału ErsatzTV przez komendy TCP `@N` oraz wyjście `/output?bus=ch-N`. | [docs/DOKUMENTACJA.md](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/DOKUMENTACJA.md) |
+| **VizRS CG Playout** | VizRS CG System ≥ 2.0.7 | Odczyt taśmy filmów przez `window.vizrsTape` na stronie wyjścia grafiki. | [docs/DOKUMENTACJA.md](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/DOKUMENTACJA.md) |
+| **VizRS CG Artist** (26.11.9) | VizRS CG System 26.11.8 | Identyczność modułów rysowania i wspólnych stylów (`web/CG_SYSTEM`: commit `92a7849`, v26.11.8), kontrolowana przez bramkę `tools/sync-cg.sh --check`. | [web/CG_SYSTEM](https://github.com/sdorpl/VizRS-CG-Artist/blob/main/web/CG_SYSTEM), [docs/DOKUMENTACJA.md](https://github.com/sdorpl/VizRS-CG-Artist/blob/main/docs/DOKUMENTACJA.md) |
+| **VizRS Live** / panel kanału (≥ 26.11.5) | VizRS CG Playout ≥ 26.11.4 | Wyświetlanie miniatur stron VizRS w wyborze elementów graficznych (Harmonogramy, Bloki, Deco) przez pośrednik `/api/cg/live/thumbs/<nr>.png`. | [CHANGELOG.md](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/CHANGELOG.md), [docs/API.md](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/API.md) |
+| **VizRS Live** / panel kanału (26.11.6) | VizRS CG Playout ≥ 26.11.9 | Dziennik emisji pobierający logi sidecara, odbiorników live ingest oraz przejęć kanału przez pośrednik API (wymaga cechy `logs` w `features` i `GET /api/live/logs`). | [CHANGELOG.md](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/CHANGELOG.md) |
+| **VizRS Live** / panel kanału (26.11.8) | VizRS CG Playout ≥ 26.11.10 | Konfiguracja grafiki na przejęcie przez live ingest (`on_live`) w edytorze reguł kanału i Slotach na żywo (wymaga cechy `on_live` w `features`). | [CHANGELOG.md](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/CHANGELOG.md), [docs/DOKUMENTACJA.md](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/DOKUMENTACJA.md) |
+| **VizRS Live** / panel kanału | VizRS CG Playout ≥ 2.12.4 | Płynne zdejmowanie i przywracanie grafiki z sekwencją animacji `OUT`/`TAKE` zamiast natychmiastowego cięcia. | [CHANGELOG.md](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/CHANGELOG.md) |
+
+## Jak aktualizować tę tabelę
+
+1. **Przy wydaniu dowolnej aplikacji pakietu:** Zaktualizuj wiersz wydanej aplikacji w sekcji „Bieżące wersje” (numer wersji, datę wydania z `CHANGELOG.md` oraz listę opublikowanych obrazów Docker i paczek instalacyjnych). Sprawdź, czy nowe wydanie nie podnosi wymagań minimalnych wobec sąsiadów i czy pozostałe aplikacje zachowują pełną zgodność.
+2. **Przenoszenie wymagań odnotowanych w CHANGELOG:** Zgodnie z zasadą pakietu VizRS („Wydania razem: zmianę wymagającą nowszego sąsiada odnotuj w `CHANGELOG.md` z minimalną wersją”), każde nowe wymaganie wersji sąsiedniej aplikacji zapisane w `CHANGELOG.md` lub dokumentacji przenieś do tabeli „Minimalne wersje sąsiadów”, podając odnośnik do pliku w repozytorium GitHub (bez numeru wiersza – wiersze się przesuwają) oraz uzasadnienie techniczne.
+3. **Stosy produkcyjne i automatyczne odświeżanie (`stack-refresh`):** Stosy produkcyjne (Portainer s1 i s2) pobierają obrazy z tagiem `:latest` (`ghcr.io/sdorpl/vizrs:latest`, `ghcr.io/sdorpl/vizrs-cg:latest`, `ghcr.io/sdorpl/vizrs-live:latest`, `ghcr.io/sdorpl/vizrs-live-legacy:latest`). Po publikacji wydania workflow `stack-refresh` w VizRS CG Playout aktualizuje plik `.release`, co wyzwala pobranie nowych obrazów i przeładowanie stosu w Portainerze; przed aktualizacją upewnij się, że zależności z tabeli są spełnione na serwerze docelowym.
+> Odnośniki do `docs/API.md` i do historii panelu w `CHANGELOG.md` CG Playout działają po scaleniu gałęzi `polaczenie-live` do `main` (P3).
