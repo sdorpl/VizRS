@@ -79,8 +79,8 @@ Zasady (identyczne we wszystkich repo, [DOKUMENTACJA](https://github.com/sdorpl/
 | Plik(i) | Źródło | Kopie | Pilnowanie |
 |---|---|---|---|
 | `vizrs-ui.css` (rdzeń wyglądu) | CG System `source/web/` | Artist `web/`, CG Playout `panel/server/web/` | `tools/sync-cg.sh --check` (Artist, CI), `scripts/sync-ui.sh` (CG Playout) – **identyczne** |
-| `renderer.js`, `motion.js`, `cgpack.js`, `pack-ui.js`, `qr.js`, `richtext.js`, `ticker-*.js`, `color-picker.js`, fonty | CG System `source/web/` | Artist `web/` (commit w `web/CG_SYSTEM`) | `sync-cg.sh --check` w CI Artist |
-| `gpu.rs`, `scale.rs`, `screen.rs` (okno Tauri na Linuksie: NVIDIA DMA-BUF, Skia CPU, XWayland przy skali ułamkowej) | CG System `source/shell/src/` | Artist `src/`, CG Playout `panel/desktop/src/` | **identyczne bajt w bajt** |
+| `renderer.js`, `motion.js`, `cgpack.js`, `pack-ui.js`, `dom.js`, `qr.js`, `richtext.js`, `ticker-*.js`, `color-picker.js`, fonty | CG System `source/web/` | Artist `web/` (commit w `web/CG_SYSTEM`) | `sync-cg.sh --check` w CI Artist |
+| `gpu.rs`, `scale.rs`, `screen.rs` (okno Tauri na Linuksie: NVIDIA DMA-BUF, Skia CPU, XWayland przy skali ułamkowej), `conn_url.rs` (adres i token serwera w oknie połączenia) | CG System `source/shell/src/` | Artist `src/`, CG Playout `panel/desktop/src/` | **identyczne bajt w bajt** |
 
 ## 5. Stos technologiczny
 

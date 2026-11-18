@@ -211,4 +211,17 @@ uruchomić `tools/sync-cg.sh` w Artist ponownie (nowy commit źródła). Playout
 5. P9 – **pominąć**.
 6. Gałęzie `refaktor` – **wypchnąć bez scalania** (CI sprawdzi, w tym `gate.sh` panelu); scalenie i wydanie później.
 
-**Następne zadania:** punkty 2 i 3 (na tych samych gałęziach `refaktor`), potem przegląd użytkownika i scalenie.
+**Stan 2026-11-18 (druga sesja) – punkty 2 i 3 zrobione** (gałęzie `refaktor`: CG System 18, Artist 9, Playout 12 commitów; wypchnięte):
+- **§4 / decyzja 3:** `normalize_url` i `valid_token` w `conn_url.rs` (źródło: CG System `source/shell/src/`), `connect.rs` re-eksportuje je
+  (`pub use`); kopie w Artist (`tools/sync-cg.sh`) i panelu (`panel/scripts/sync-ui.sh`) pod `--check`. Nowy test `tokens`.
+  `shell.js`, `native-smoke`, `okno.js` (Artist), `okno.cjs` (panel) zielone.
+- **§5 / decyzja 2:** `web/dom.js` (CG System, kopia w Artist): `html``` escapuje wstawiane wartości, `raw`, `esc`, `orEmpty`,
+  `setHtml`/`appendHtml`/`replaceHtml` – jedyne zapisy `innerHTML`/`outerHTML`. Przerobione: Trio (`web/trio/*`), `pack-ui`,
+  `ticker-items`, `dialogs`, `native`, `color-picker`, `qrSvg`/`renderer`, edytor Artist (`web/editor/*`, `native.js`). Zamrożony
+  `/artist` CG System bez zmian – opisany wyjątek w zasadzie „Dane z zewnątrz są obce” (blok B zasad pakietu, zsynchronizowany).
+  Przy okazji escapowane są opcje pól typu lista w Trio i kolory kodu QR (CHANGELOG CG System). Zgodność: `tk-equiv` 0 różnic,
+  `trio-equiv` tylko id/czasy z serwera, `artist-crawl` (339 kroków) 0 różnic, `engines.js` 0 różnic, golden = 7 znanych.
+- Binarki `bin/` CG System przebudowane w ostatnim commicie gałęzi (`4184604`).
+
+**Następne zadania:** przegląd użytkownika, CI na gałęziach `refaktor`, scalenie do `main` (Artist: po scaleniu CG System ponownie
+`tools/sync-cg.sh`, bo `web/CG_SYSTEM` wskazuje commit z gałęzi), potem wydanie.

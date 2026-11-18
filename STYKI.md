@@ -176,19 +176,20 @@ Współdzielone pliki źródłowe, komponenty wyglądu oraz moduły okna natywne
 | Element | Dostawca | Klienci | Opis u dostawcy |
 |---|---|---|---|
 | **`vizrs-ui.css`** | VizRS CG System (`source/web/`) | VizRS CG Artist (`web/`), VizRS CG Playout (`panel/server/web/`) | [VizRS-CG-System: source/web/vizrs-ui.css](https://github.com/sdorpl/VizRS-CG-System/blob/main/source/web/vizrs-ui.css) |
-| **Moduły okna (`gpu.rs`, `scale.rs`, `screen.rs`)** | VizRS CG System (`source/shell/src/`) | VizRS CG Artist (`src/`), VizRS CG Playout (`panel/desktop/src/`) | [VizRS-CG-System: docs/DOKUMENTACJA.md §12](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/DOKUMENTACJA.md#12-uruchamianie-opcje-bezpiecze%C5%84stwo) |
+| **Moduły okna (`gpu.rs`, `scale.rs`, `screen.rs`, `conn_url.rs`)** | VizRS CG System (`source/shell/src/`) | VizRS CG Artist (`src/`), VizRS CG Playout (`panel/desktop/src/`) | [VizRS-CG-System: docs/DOKUMENTACJA.md §12](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/DOKUMENTACJA.md#12-uruchamianie-opcje-bezpiecze%C5%84stwo) |
 | **Zasady pakietu (`CLAUDE.md`, `AGENTS.md`...)** | VizRS CG System (`CLAUDE.md`, `tools/sync-zasady.sh`) | VizRS CG Artist, VizRS CG Playout, repozytorium nadrzędne VizRS | [VizRS-CG-System: CLAUDE.md](https://github.com/sdorpl/VizRS-CG-System/blob/main/CLAUDE.md) |
 | **Moduły renderera i edycji scen** | VizRS CG System (`source/web/`) | VizRS CG Artist (`web/`) | [VizRS-CG-System: docs/DOKUMENTACJA.md §4](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/DOKUMENTACJA.md#4-renderowanie-scen-i-tekstu-rendererjs) |
 
 ### Szczegóły techniczne elementów styku
 - **Zarządzanie kodem wspólnym:** W pakiecie obowiązuje zasada braku zewnętrznych zależności bibliotecznych w rdzeniach serwerów. Kod wspólny nie jest wydzielany do osobnej biblioteki (crate/npm), lecz synchronizowany bezpośrednio w postaci plików źródłowych ze sprawdzaniem zgodności `--check` w CI.
 - **`vizrs-ui.css`:** Wspólny rdzeń wizualny platformy VizRS (definicje tokenów kolorystycznych, typografii, kontrolek formularzy, kart, przycisków akcji TAKE/OUT/ARM oraz statusów połączeń). Synchronizowany skryptami `tools/sync-cg.sh` (Artist) oraz `panel/scripts/sync-ui.sh` (CG Playout).
-- **Moduły okna Tauri na Linuksie (`gpu.rs`, `scale.rs`, `screen.rs`):** Identyczne bajt w bajt implementacje obsługi specyfiki Linuksa w aplikacjach desktopowych:
+- **Moduły okna Tauri (`gpu.rs`, `scale.rs`, `screen.rs`, `conn_url.rs`):** Identyczne bajt w bajt implementacje obsługi specyfiki Linuksa w aplikacjach desktopowych:
   - `gpu.rs`: Wykrywanie sterowników GPU, obsługa obejścia problemów ze sprzętowym renderowaniem WebKitGTK na układach NVIDIA (wybór buforów DMA-BUF lub programowego backendu Skia).
   - `scale.rs`: Rozwiązanie problemu braku natywnej obsługi ułamkowego skalowania Wayland w GTK 3 / WebKitGTK 4.1 poprzez automatyczne przełączanie na sesję XWayland pod kompozytorem KWin.
   - `screen.rs`: Ograniczanie początkowego rozmiaru nowo otwieranych okien do maksymalnie 92% szerokości i 90% wysokości monitora roboczego.
+  - `conn_url.rs`: Sprawdzanie adresu (`normalize_url`) i tokenu (`valid_token`) serwera w oknie „Połącz z serwerem”; reszta `connect.rs` różni się między oknami i nie jest synchronizowana.
 - **Zasady pakietu:** Bloki wspólne (`pakiet:A`, `pakiet:B`, `pakiet:C`, `pakiet:D`, `pakiet:S`) w plikach instrukcji agentów (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `docs/AGENCI.md`) są dystrybuowane skryptem `tools/sync-zasady.sh`.
-- **Moduły strony Artist:** Moduły `renderer.js`, `motion.js`, `qr.js`, `richtext.js`, `ticker-*.js`, `color-picker.js`, `cgpack.js`, `pack-ui.js`, `ui.css` oraz zestawy fontów offline w VizRS CG Artist są kopiami z `source/web/` w VizRS CG System (wersja odnotowywana w pliku `web/CG_SYSTEM`). Wszelkie zmiany logiki rysowania muszą być najpierw wprowadzane w silniku CG System, a następnie propagowane do edytora Artist.
+- **Moduły strony Artist:** Moduły `renderer.js`, `motion.js`, `qr.js`, `richtext.js`, `ticker-*.js`, `color-picker.js`, `cgpack.js`, `pack-ui.js`, `dom.js` (zapis HTML szablonem `html` z escapowaniem), `ui.css` oraz zestawy fontów offline w VizRS CG Artist są kopiami z `source/web/` w VizRS CG System (wersja odnotowywana w pliku `web/CG_SYSTEM`). Wszelkie zmiany logiki rysowania muszą być najpierw wprowadzane w silniku CG System, a następnie propagowane do edytora Artist.
 
 ---
 

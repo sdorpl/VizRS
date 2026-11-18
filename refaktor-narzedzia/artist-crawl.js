@@ -1,13 +1,15 @@
 // Przegląd edytora Artist: stara (jeden skrypt) i nowa (moduły) wersja – te same kroki, zrzuty i błędy JS.
 // node artist-crawl.js <vizrs> <web> <stary-artist.html> <katalog-wyników>
+// WEB_OLD=<stary katalog web/> – wariant „old” z tego katalogu (porównanie dwóch wersji modułów; <stary-artist.html> pomijany: podaj -)
 const { spawn } = require('child_process');
 const path = require('path'); const fs = require('fs'); const os = require('os'); const net = require('net');
 const { chromium } = require(path.join(process.env.PLAYWRIGHT_DIR, 'node_modules/playwright'));
-const [bin, web, oldHtml, outDir] = process.argv.slice(2);
+const [bin, WEB, oldHtml, outDir] = process.argv.slice(2);
 const freePort = () => new Promise((res) => { const s = net.createServer(); s.listen(0, '127.0.0.1', () => { const { port } = s.address(); s.close(() => res(port)); }); });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function crawl(variant) {
+  const web = variant === 'old' && process.env.WEB_OLD ? process.env.WEB_OLD : WEB;
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'artcrawl-'));
   const port = await freePort();
   const srv = spawn(bin, ['serve', '--port', String(port), '--tcp', '0', '--data', data, '--web', web], { stdio: 'ignore' });
@@ -21,7 +23,7 @@ async function crawl(variant) {
   p.on('pageerror', (e) => errs.push(e.message));
   await p.route('**/native.css', (r) => r.fulfill({ contentType: 'text/css', body: fs.readFileSync(path.join(web, 'native.css'), 'utf8') }));
   await p.route('**/editor/*.js', (r) => r.fulfill({ contentType: 'text/javascript', body: fs.readFileSync(path.join(web, 'editor', path.basename(new URL(r.request().url()).pathname)), 'utf8') }));
-  if (variant === 'old' || process.env.BOTH_OLD) await p.route(/\/artist$/, (r) => r.fulfill({ contentType: 'text/html; charset=utf-8', body: fs.readFileSync(oldHtml, 'utf8') }));
+  if ((variant === 'old' && !process.env.WEB_OLD) || process.env.BOTH_OLD) await p.route(/\/artist$/, (r) => r.fulfill({ contentType: 'text/html; charset=utf-8', body: fs.readFileSync(oldHtml, 'utf8') }));
   await p.goto(`http://127.0.0.1:${port}/artist`);
   for (let i = 0; i < 100 && (await p.evaluate(() => document.querySelector('#conn')?.textContent)) !== 'połączono'; i++) await tick(100);
   await tick(800);
