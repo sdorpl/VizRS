@@ -202,3 +202,13 @@ uruchomić `tools/sync-cg.sh` w Artist ponownie (nowy commit źródła). Playout
 `native-patch.test.mjs` Playout – raz zawieszony, w powtórce zielony.
 
 **Narzędzia i bramki:** `refaktor-narzedzia/` (README). Playwright: `PLAYWRIGHT_DIR="/home/maciej/Documents/cgapp v1"`.
+
+**Decyzje użytkownika do otwartych punktów (2026-11-18):**
+1. S4 – `renderer.js` **nie dzielić** (najwyżej wydzielić czyste funkcje, bez metod klasy).
+2. §5 – **tagowany szablon `html` z automatycznym `esc()`** i jednym miejscem zapisu (`dom.js`, synchronizowany) jako opisany wyjątek w zasadzie B. *Do zrobienia.*
+3. §4 – do synchronizacji **tylko identyczne `normalize_url` i `valid_token`** (np. `conn_url.rs` z `--check`); reszta okien bez zmian. *Do zrobienia.*
+4. Pętle na żywo (P4 `frames`, P5, P6 `sequence`, P7) – **zostawić**.
+5. P9 – **pominąć**.
+6. Gałęzie `refaktor` – **wypchnąć bez scalania** (CI sprawdzi, w tym `gate.sh` panelu); scalenie i wydanie później.
+
+**Następne zadania:** punkty 2 i 3 (na tych samych gałęziach `refaktor`), potem przegląd użytkownika i scalenie.
