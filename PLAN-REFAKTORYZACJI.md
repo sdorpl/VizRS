@@ -211,7 +211,7 @@ uruchomić `tools/sync-cg.sh` w Artist ponownie (nowy commit źródła). Playout
 5. P9 – **pominąć**.
 6. Gałęzie `refaktor` – **wypchnąć bez scalania** (CI sprawdzi, w tym `gate.sh` panelu); scalenie i wydanie później.
 
-**Stan 2026-11-18 (druga sesja) – punkty 2 i 3 zrobione** (gałęzie `refaktor`: CG System 18, Artist 9, Playout 12 commitów; wypchnięte):
+**Stan 2026-11-18 (druga sesja) – punkty 2 i 3 zrobione** (gałęzie `refaktor`: CG System 18, Artist 9, Playout 13 commitów; wypchnięte; CI zielone we wszystkich trzech – Artist i Playout przez `gh workflow run … --ref refaktor`, w tym `obrazy-i-e2e` panelu):
 - **§4 / decyzja 3:** `normalize_url` i `valid_token` w `conn_url.rs` (źródło: CG System `source/shell/src/`), `connect.rs` re-eksportuje je
   (`pub use`); kopie w Artist (`tools/sync-cg.sh`) i panelu (`panel/scripts/sync-ui.sh`) pod `--check`. Nowy test `tokens`.
   `shell.js`, `native-smoke`, `okno.js` (Artist), `okno.cjs` (panel) zielone.
@@ -222,6 +222,7 @@ uruchomić `tools/sync-cg.sh` w Artist ponownie (nowy commit źródła). Playout
   Przy okazji escapowane są opcje pól typu lista w Trio i kolory kodu QR (CHANGELOG CG System). Zgodność: `tk-equiv` 0 różnic,
   `trio-equiv` tylko id/czasy z serwera, `artist-crawl` (339 kroków) 0 różnic, `engines.js` 0 różnic, golden = 7 znanych.
 - Binarki `bin/` CG System przebudowane w ostatnim commicie gałęzi (`4184604`).
+- CI panelu: sparse checkout CG System obejmuje teraz moduły okna (bez tego `sync-ui.sh --check` padał od 70852d1).
 
 **Następne zadania:** przegląd użytkownika, CI na gałęziach `refaktor`, scalenie do `main` (Artist: po scaleniu CG System ponownie
 `tools/sync-cg.sh`, bo `web/CG_SYSTEM` wskazuje commit z gałęzi), potem wydanie.
