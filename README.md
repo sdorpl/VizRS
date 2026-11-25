@@ -12,7 +12,7 @@ Dawne osobne repozytorium [VizRS-Live-Playout](https://github.com/sdorpl/VizRS-L
 
 | Dokument | Co zawiera |
 |---|---|
-| [README.md](README.md) (ten plik) | mapa aplikacji (§1), **co robi każda aplikacja** (§2), kto z kim rozmawia (§3), styki w skrócie (§4), wspólny kod (§5), stos technologiczny (§6), stos produkcyjny i porty (§7), słownik (§8), stan połączenia (§9) |
+| [README.md](README.md) (ten plik) | mapa aplikacji (§1), **co robi każda aplikacja** (§2) i aplikacje natywne na Linux, Windows, macOS (§2.4), kto z kim rozmawia (§3), styki w skrócie (§4), wspólny kod (§5), stos technologiczny (§6), stos produkcyjny i porty (§7), słownik (§8), stan połączenia (§9) |
 | [STYKI.md](STYKI.md) | wszystkie styki pakietu: protokół VizRS, formaty scen, Live API, most VizRS Bridge, API panelu, ErsatzTV, kod wspólny, logowanie w pakiecie; reguły zmian styku |
 | [ZGODNOSC.md](ZGODNOSC.md) | bieżące wydania aplikacji (obrazy, paczki) i minimalne wersje sąsiadów |
 | [PLAN-PORZADKOWANIA.md](PLAN-PORZADKOWANIA.md) | decyzje D1–D10 i połączenie VizRS Live z CG Playout (zakończone 2026-11-16) – zapis historyczny |
@@ -180,6 +180,35 @@ stacji. Jedna wersja i jedno wydanie dla wszystkich składników.
 - Podgląd strumieni w przeglądarce i oknie (MSE: H.264, AAC, HEVC i AC-3 tam, gdzie przeglądarka je dekoduje).
 
 **Granice**: nie zmienia kodu ErsatzTV i nie pisze do jego bazy (wszystko przez most); bez wbudowanego TLS (panel za reverse proxy); ingest nie transkoduje sygnału studia (wymaga H.264 + AAC); jeden sygnał live naraz na kanał; nie edytuje plików konfiguracyjnych na wolumenach.
+
+### 2.4. Aplikacje natywne – Linux, Windows, macOS
+
+Pakiet ma trzy programy okienne (desktopowe), wszystkie na **Tauri 2** z systemowym silnikiem stron: **WebKitGTK 4.1**
+(Linux), **WebView2** (Windows) i **WKWebView** (macOS). Serwery pakietu (`vizrs`, `vizrs-cg`, `vizrs-live`) i ErsatzTV
+działają osobno – okna albo uruchamiają lokalny serwer, albo łączą się z serwerem zdalnym przez wbudowanego pośrednika,
+który trzyma token lub sesję konta (strona w oknie ich nie zna).
+
+| Program | Aplikacja pakietu | Do czego | Linux | Windows | macOS |
+|---|---|---|---|---|---|
+| **VizRS Trio** (`vizrs-shell`) | CG System | okno Trio i podglądu wyjścia; bez serwera zdalnego uruchamia lokalny `vizrs` jako osobny proces (awaria okna nie zdejmuje anteny), z `--connect` łączy się z serwerem zdalnym (token albo konto panelu); zasobnik, skróty globalne TAKE / CONTINUE / OUT, wiele monitorów | AppImage `VizRS-Trio-…-x86_64.AppImage`, `vizrs_…_amd64.deb`, archiwum `.tar.gz` (x86_64) | instalator `VizRS-Trio-…-windows-x86_64-setup.exe` (Menu Start, bez uprawnień administratora albo dla wszystkich), archiwum `.zip` | archiwum `.tar.gz` (Apple Silicon, arm64) z binarkami `vizrs`, `vizrs-shell` – bez paczki `.app` / `.dmg` |
+| **VizRS CG Artist** (`vizrs-cg-artist`) | CG Artist | edytor scen i animacji; działa lokalnie bez serwera albo na serwerze zdalnym `vizrs`; otwiera pliki `.cgpack` | `.deb`, `.rpm`, AppImage (x86_64) | `.msi` i instalator `.exe` (x86_64) | `.dmg` (Apple Silicon, aarch64) |
+| **Okno panelu VizRS CG Playout** (`vizrs-live-desktop`) | CG Playout | natywny klient panelu kanału na serwerze (token albo konto operatora); podgląd strumieni (GStreamer w paczce) i grafiki VizRS `/output` przez lokalnego pośrednika, Trio i odnośniki – w przeglądarce systemowej | AppImage `VizRS-CG-Playout-…-x86_64.AppImage` | – (panel w przeglądarce) | – (panel w przeglądarce) |
+
+Uwagi:
+
+- **Bez okna natywnego** wszystko działa w przeglądarce: Trio i `/output` z serwera `vizrs`, panel kanału z serwera
+  `vizrs-live`. `vizrs trio|output|artist` otwiera też okno aplikacji Chromium / Edge bez pasków (wszystkie systemy), a
+  `vizrs-app` na Windows uruchamia je ze skrótu bez okna konsoli.
+- **Okno panelu CG Playout** ma kod dla trzech systemów (Tauri), ale wydania zawierają tylko AppImage dla Linuksa x86_64;
+  na Windows i macOS operator używa panelu w przeglądarce.
+- **Podpisy:** instalatory Windows i paczki macOS nie są podpisane (SmartScreen, Gatekeeper ostrzegają przy pierwszym
+  uruchomieniu) – brak certyfikatów Authenticode / Apple Developer ID.
+- **Linux:** okna wymagają systemowego WebKitGTK 4.1 (`libwebkit2gtk-4.1-0`); AppImage budowane na Ubuntu 22.04 (starsza
+  glibc). Wspólne moduły okna (`gpu.rs`, `scale.rs`, `screen.rs`) dobierają akcelerację dla kart NVIDIA i obsługują
+  skalę ułamkową (XWayland pod KDE).
+- **Serwery na systemach:** `vizrs` (CG System) działa na Linuksie, Windows i macOS (archiwa, usługa systemd / launchd /
+  NSSM) oraz w Dockerze; sidecar `vizrs-cg` i panel `vizrs-live` – tylko Linux (x86_64, arm64) i obrazy Docker; stos
+  produkcyjny to Linux z Dockerem.
 
 ## 3. Kto z kim rozmawia
 
