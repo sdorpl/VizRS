@@ -291,7 +291,7 @@ Zasady (identyczne we wszystkich repo, [DOKUMENTACJA](https://github.com/sdorpl/
 | Inne | – | – | ffmpeg (nakładka `vizrs-ffmpeg`), musl; **C# / .NET 10** VizRS Bridge (startup hook w ErsatzTV) |
 | Dystrybucja | binarki, `.deb/.rpm/AppImage`, Inno Setup, obraz `scratch` ~3 MB (amd64/arm64) | `.deb/.rpm/AppImage/.msi/.exe/.dmg` (bez Dockera) | Obrazy Docker: `ghcr.io/sdorpl/vizrs-cg`, `vizrs-seed`, `vizrs-live`, `vizrs-live-legacy` (wszystkie `:latest`), archiwa/binarki, AppImage panelu |
 
-Wspólne cechy: Rust bez frameworków, UI bez bibliotek JS, wszystko po polsku, wersje kalendarzowe `RR.MM.N` (od 26.11.1, 2026-11-12; wcześniej semver), wydanie = tag `v*` → GitHub Actions (`release.yml`).
+Wspólne cechy: Rust bez frameworków, UI bez bibliotek JS, wszystko po polsku, wersje kalendarzowe `RR.MM.N` (od 26.11.1, 2026-11-12; wcześniej semver), wydanie = tag `v*` → GitHub Actions (`release.yml` wywołuje CI tego commita i publikuje obrazy oraz wydanie dopiero po zielonym; znacznik i obraz zawsze `v<wersja>`, `:latest` tylko przy publikacji wersji bez łącznika).
 
 ## 7. Stos produkcyjny (Docker)
 
