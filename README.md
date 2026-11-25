@@ -11,20 +11,140 @@ Dawne osobne repozytorium [VizRS-Live-Playout](https://github.com/sdorpl/VizRS-L
 > w kodzie (porty, styki, wspólne pliki, wersje). Plan porządków i stan realizacji: [PLAN-PORZADKOWANIA.md](PLAN-PORZADKOWANIA.md).
 >
 > VizRS Live został wchłonięty przez **VizRS CG Playout** (jeden produkt: sidecar + panel `panel/` + most + stos).
-> Pakiet liczy 3 aplikacje: CG System, CG Artist, CG Playout – patrz §8 i [plan połączenia](PLAN-PORZADKOWANIA.md#3-plan-połączenia-vizrs-live--vizrs-cg-playout).
+> Pakiet liczy 3 aplikacje: CG System, CG Artist, CG Playout – patrz §2 (co robi każda), §9 i [plan połączenia](PLAN-PORZADKOWANIA.md#3-plan-połączenia-vizrs-live--vizrs-cg-playout).
 
 ## 1. Trzy aplikacje w jednym zdaniu
 
 | Aplikacja | Katalog / repo | Wersja | Co robi | Kto używa |
 |---|---|---|---|---|
-| **VizRS CG System** | `VizRS CG System` · `sdorpl/VizRS-CG-System` | 26.11.8 | **Silnik grafiki**: trzyma show (sceny, strony), prowadzi stan anteny (TAKE/OUT/UPDATE…), podaje Trio (playout stron) i przezroczyste wyjście `/output` 1920×1080 | operator grafiki (Trio), OBS/vMix, pozostałe aplikacje |
-| **VizRS CG Artist** | `VizRS CG Artist` · `sdorpl/VizRS-CG-Artist` | 26.11.9 | **Edytor scen i animacji** (desktop, Tauri 2). Działa bez serwera, sceny wysyła (deploy) na serwer `vizrs` albo do paczek `.cgpack` | grafik |
-| **VizRS CG Playout** | `VizRS CG Playout` · `sdorpl/VizRS-CG-Playout` (dawniej VirtRS) | 26.11.11 | **Automatyka emisji i panel kanału (MCR)**: sidecar obok ErsatzTV (`vizrs-cg` + nakładka `vizrs-ffmpeg` wtapiająca `/output`, live ingest RTMP/SRT takeover, Live API), zintegrowany panel kanału w `panel/` (`vizrs-live` nad ErsatzTV legacy z mostem VizRS Bridge: ramówka, media, EPG, mozaika, as-run, sloty live) oraz okno desktopowe Tauri. Wchłonął dawne osobne repozytorium VizRS Live | automatyka kanału, operator emisji, planista, administrator |
+| **VizRS CG System** | `VizRS CG System` · `sdorpl/VizRS-CG-System` | 26.11.13 | **Silnik grafiki i playout stron**: przechowuje show (sceny, strony, zasoby), prowadzi stan anteny (TAKE / CONTINUE / OUT / UPDATE) dla anteny głównej i do 64 anten kanałów, daje stanowisko operatora **Trio** i przezroczyste wyjście `/output` 1920×1080 | operator grafiki (Trio), OBS/vMix, Companion, pozostałe aplikacje pakietu |
+| **VizRS CG Artist** | `VizRS CG Artist` · `sdorpl/VizRS-CG-Artist` | 26.11.12 | **Edytor scen i animacji** (program desktopowy, Tauri 2): projektowanie szablonów, oś czasu, presety ruchu, reguły dock; działa lokalnie bez serwera, sceny wysyła na serwer `vizrs` albo w paczce `.cgpack` | grafik, przygotowujący oprawę |
+| **VizRS CG Playout** | `VizRS CG Playout` · `sdorpl/VizRS-CG-Playout` | 26.11.31 | **Automatyka emisji kanałów i panel MCR** nad ErsatzTV: wtapia grafikę VizRS w obraz kanałów według ramówki, przejmuje kanał sygnałem studia (RTMP / SRT / RTSP / HLS / YouTube), daje polski panel kanału (ramówka, media, EPG, podgląd, mozaika, as-run, konta) i natywne okno operatora (AppImage) | operator emisji, planista, administrator stacji; widzowie dostają strumienie |
 
-Zewnętrzny, **niezmieniany** składnik stosu: **ErsatzTV legacy** (.NET; baza, skaner, planowanie, transkodowanie HLS/TS).
-Dawne osobne repozytorium VizRS Live (`sdorpl/VizRS-Live-Playout`) tworzy obecnie podkatalog `panel/` w CG Playout i po zakończeniu migracji zostanie zarchiwizowane.
+Zewnętrzny, **niezmieniany** składnik stosu: **ErsatzTV legacy** (.NET; baza, skaner, planowanie, transkodowanie HLS/TS) z nowym silnikiem nadawania **ErsatzTV Next**.
+Dawne osobne repozytorium VizRS Live (`sdorpl/VizRS-Live-Playout`) tworzy obecnie podkatalog `panel/` w CG Playout i jest zarchiwizowane.
 
-## 2. Kto z kim rozmawia
+## 2. Co robi każda aplikacja
+
+Opis funkcji dla czytelnika, który chce wiedzieć, *co* dana aplikacja robi i gdzie kończy się jej zakres. Szczegóły i
+konfiguracja – w dokumentacji aplikacji (odnośniki przy nagłówkach).
+
+### 2.1. VizRS CG System – silnik grafiki i Trio
+
+Dokumentacja: [`docs/DOKUMENTACJA.md`](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/DOKUMENTACJA.md), [`docs/API.md`](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/API.md), [`docs/COMPANION.md`](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/COMPANION.md).
+
+Serwer grafiki telewizyjnej czasu rzeczywistego (odpowiednik pary „silnik + Trio”): przechowuje grafikę, decyduje,
+co jest na antenie, i rysuje to na przezroczystym wyjściu, które pobierają OBS, vMix, miksery i CG Playout.
+
+**Składniki**
+
+- **`vizrs`** – serwer (Rust, bez zależności zewnętrznych): HTTP/1.1 z interfejsem webowym, strumień zdarzeń SSE `/events`, komendy tekstowe TCP 6100, OSC (UDP), webhooki; atomowy zapis show i dziennik zdarzeń.
+- **Trio (`/trio`)** – stanowisko operatora grafiki: wybór i wypełnianie stron, TAKE / CONTINUE / OUT, podgląd, rundown, karuzele, makra; układ dopasowuje się do telefonu i tabletu.
+- **Wyjście (`/output`)** – przezroczysta strona 1920×1080 renderowana przez `renderer.js`; parametry wybierają warstwy, antenę (`bus=preview`, `bus=ch-N`), tło, tryb Fill / Key dla mikserów, obniżony klatkaż dla kanałów bez GPU.
+- **`vizrs-shell`** – natywne okno (Tauri 2) dla Trio i wyjścia: menu, wiele monitorów, ikona w zasobniku, skróty globalne, logowanie tokenem albo kontem panelu; `vizrs trio|output|artist` otwiera też okno Chromium/Edge bez pasków.
+- **`vizrs-render`** – renderer natywny na CPU (tiny-skia, rustybuzz) bez przeglądarki: strumień klatek dla playoutu kanału (`stream`), miniatury (`thumb`), obrysy grafiki (`bounds`); obsługuje ruch presetów 2D i obrazy WebP.
+- **`/artist`** – dawny webowy edytor scen, zamrożony (nowe funkcje projektowe są tylko w VizRS CG Artist).
+- Dystrybucja: binarki, `.deb` / `.rpm` / AppImage, instalator Windows, obraz Docker `ghcr.io/sdorpl/vizrs` (~3 MB, amd64 / arm64).
+
+**Grafika: sceny i strony**
+
+- **Sceny** (szablony) mają węzły, pola do wypełnienia i animacje z punktami zatrzymania: wejście (TAKE), kolejne fazy (CONTINUE), wyjście (OUT). **Strony** to ponumerowane wypełnienia scen (np. `TAKE 7510`).
+- **Warstwy** (`back`, `main`, `front`, własne `z<N>_…`) – grafiki na różnych warstwach grają jednocześnie, na tej samej się zastępują; zmiana warstwy szablonu w Trio przenosi grafikę bez przerwania animacji.
+- **Tekst**: dopasowanie do pola (`textFit`), polska typografia (twarde spacje), RichText, automatyczna zamiana skrótów; tła i ramki dopasowują się do tekstu, maski przycinają wyjazdy.
+- **Dock**: scena odsuwa się od innych belek na antenie według ich bieżącego obrysu.
+- **Presety ruchu**: wejścia, wyjścia, pętle i kaskady bez ręcznych kluczy.
+- **Ticker** – przewijana taśma (`crawl`) i plansze (`roll`, `wipe`, `whip`) z kategoriami; wiadomości zmieniane w locie.
+- **Zegary, stopery, odliczania** (także do startu następnej audycji) i **kody QR** generowane lokalnie.
+- **Paczki `.cgpack`** – eksport i import scen, stron, grafik i fontów z planem importu (bez duplikatów).
+
+**Antena i sterowanie**
+
+- TAKE, CONTINUE, OUT, CLEAR, UPDATE (podmiana treści bez ponownej animacji), ARM na wyjście podglądu (`bus=preview`) przed wejściem na wizję.
+- **Anteny kanałów** – do 64 niezależnych anten (`@N` w TCP, `?channel=N`, `bus=ch-N`): wspólne strony, osobne warstwy, rundowny i karuzele; z nich korzysta CG Playout przy wielu kanałach.
+- **Rundown** (ręczna kolejka z NEXT / F8), **karuzele** (pętla stron z czasem trwania, prowadzona przez serwer), **makra** (sekwencje komend z opóźnieniami).
+- **Reguły ramówkowe stron** (`playout`) – np. „60 s przed końcem audycji”; odczytuje je CG Playout.
+- Sterowanie z zewnątrz: HTTP API, TCP 6100, OSC, zmienne stanu dla Companion / Stream Deck (`/api/variables`), webhooki `onAir` / `offAir` / `error`.
+
+**Bezpieczeństwo**
+
+- Dwa tokeny: **operatora** (pełne sterowanie) i **wyjścia** (tylko odczyt: `/output`, zdarzenia, fonty, grafiki – dla OBS i podglądu w panelu).
+- Opcjonalne **logowanie kontami panelu VizRS CG Playout** (Trio i Artist), sesja sprawdzana w panelu co 15 s.
+- Spowalnianie zgadywania tokenów, blokada żądań z obcych witryn, limity połączeń, dziennik audytu, kontrola rewizji przy równoczesnej edycji.
+
+**Granice**: nie daje sygnału SDI / NDI / SRT / RTMP (obraz to strona `/output` albo surowe klatki `vizrs-render`); nie ma wbudowanego TLS (wystawienie przez reverse proxy); rundown nie gra sam według zegara; nie pobiera sam RSS do tickera; bez grafiki 3D i bez dźwięku.
+
+### 2.2. VizRS CG Artist – edytor scen
+
+Dokumentacja: [`docs/DOKUMENTACJA.md`](https://github.com/sdorpl/VizRS-CG-Artist/blob/main/docs/DOKUMENTACJA.md).
+
+Program desktopowy grafika (odpowiednik edytora Artist): projektuje i animuje sceny, które potem gra CG System.
+Domyślnie działa w pełni lokalnie, bez serwera; może też pracować wprost na zdalnym serwerze `vizrs`.
+
+**Składniki**
+
+- **`vizrs-cg-artist`** – jeden program Tauri 2 (WebKitGTK 4.1 / WebView2 / WKWebView) z wbudowanym lokalnym serwerem na `127.0.0.1` (stały port z zakresu 20000–31999), który podaje interfejs i magazyn albo jest pośrednikiem do serwera zdalnego.
+- **Okno edytora** (kanwa 1:1, drzewo sceny, właściwości, oś czasu, menu systemowe, skróty) i **okno „Połącz z serwerem”** (do 20 zapisanych serwerów, token albo konto panelu).
+- Jedna instancja: otwarcie pliku `.cgpack` przekazuje go do działającego programu.
+- Paczki: `.deb`, `.rpm`, AppImage, `.msi`, `.exe`, `.dmg` (bez Dockera).
+
+**Funkcje**
+
+- **Kanwa**: zaznaczanie wielu elementów i edycja zbiorcza, uchwyty rozmiaru i obrotu, wyrównywanie i rozkład, schowek między scenami, edycja tekstu wprost na kanwie, zaokrąglanie pojedynczych rogów.
+- **Prowadnice i tła podglądu**: siatki, bezpieczne strefy (EBU R 95, 4:3, 14:9), podkłady (kolor, chroma key, szachownica).
+- **Oś czasu**: presety ruchu (wejście, pętla, wyjście, animacje tekstu) i klucze właściwości w jednym widoku; rozbijanie presetu na klucze i preset z zaznaczonych kluczy; maski z innego węzła.
+- **Sceny odniesienia i dock**: inne sceny projektu w tle (według warstw), pomiar odstępów (Alt), ostrzeżenia o kolizjach; reguły dock z podglądem ruchu i ustawianiem przesunięcia przeciąganiem.
+- **Magazyn lokalny** w formacie serwera (`show.json`, `assets/`, presety) ze sprawdzaniem modelem `vizrs-model`; blokada katalogu przed równoczesnym serwerem, kopie przy każdym zapisie, kopie robocze do odzyskania po awarii.
+- **Wysyłka na serwer** (deploy): stan każdej sceny (nowa, zmieniona, obca, konflikt nazwy, na antenie) i wysłanie wybranych scen z zasobami, z kontrolą rewizji; token albo sesja konta zostaje w programie, nie trafia do strony.
+- **`.cgpack`**: eksport i import paczek z planem rozwiązania konfliktów; deduplikacja grafik i fontów.
+- Linux: tryby akceleracji WebKitGTK dla NVIDIA, skala ułamkowa (XWayland), ciemny motyw.
+
+**Granice**: nie emituje grafiki i nie daje wyjścia `/output`; nie ma Trio (stron, rundownów, karuzel, makr); nie zna kanałów, ramówki ani live; nie łączy się z ErsatzTV, OBS ani Companion. Instalatory Windows i macOS są niepodpisane.
+
+### 2.3. VizRS CG Playout – automatyka emisji i panel kanału
+
+Dokumentacja: [`docs/DOKUMENTACJA.md`](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/DOKUMENTACJA.md) (sidecar §1–§8, panel §9–§15), [`docs/API.md`](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/API.md), [`docs/INSTRUKCJA.md`](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/INSTRUKCJA.md).
+
+Produkt emisyjny zbudowany wokół niezmienionego ErsatzTV: ErsatzTV prowadzi bazę mediów, ramówkę i transkodowanie,
+a CG Playout dokłada grafikę VizRS w obrazie kanałów, przejęcia kanału przez studio i polski panel do prowadzenia
+stacji. Jedna wersja i jedno wydanie dla wszystkich składników.
+
+**Składniki**
+
+- **`vizrs-cg`** (sidecar, Rust) – wysyła do CG System komendy grafiki według tego, co leci w ramówce; prowadzi renderer kanału (Chromium headless albo `vizrs-render`), taśmę tickera, strefy grafiki, odbiorniki live; podaje panelowi Live API (`:7700`).
+- **`vizrs-ffmpeg`** – nakładka zamiast ffmpeg w kontenerze ErsatzTV: wtapia grafikę i znaki wodne w obraz kanału, przełącza kanał na sygnał live (takeover) bez przerwy dla widzów.
+- **`vizrs-etv-client`** – klient elementu „script” ErsatzTV: przekazuje dane pozycji (tytuł, następna pozycja, czasy) do sidecara.
+- **VizRS Bridge** (C# / .NET 10) – wtyczka ładowana do ErsatzTV legacy: wykonuje komendy MediatR z białej listy (kanały, harmonogramy, playouty, media, sesje); kodu ErsatzTV nie zmienia.
+- **`vizrs-live`** – serwer panelu (Rust, bez zależności) z wbudowanym interfejsem SPA, kontami operatorów i pośrednikiem do mostu i sidecara (`:8090`).
+- **Okno panelu** (`panel/desktop/`, Tauri 2, AppImage) – natywny klient panelu na serwerze dla stanowiska operatora: token i sesja konta zostają w programie; podgląd strumieni (GStreamer w paczce) i grafiki VizRS przez lokalnego pośrednika.
+- **Proxy widzów** (Caddy, `:8409`) – na zewnątrz tylko strumienie HLS / TS, listy M3U, EPG XMLTV i HDHomeRun; web GUI legacy i most zablokowane.
+- Obrazy Docker: `vizrs-cg`, `vizrs-seed` (dane startowe), `vizrs-live`, `vizrs-live-legacy` (ErsatzTV z mostem); stos compose z profilami `grafika` i `ingest`.
+
+**Grafika w obrazie kanału**
+
+- Komendy na start i koniec każdej pozycji (TAKE / UPDATE / OUT) z danymi ramówki: `{title}`, `{next_title}`, `{next_start_iso}` (odliczanie do następnej audycji) i inne.
+- Grafika zdejmowana na czas reklam i przywracana z pierwszym zwykłym programem.
+- **Zdarzenia wtórne** – belki i zapowiedzi w zadanej sekundzie pozycji, dla konkretnej pozycji albo ścieżki pliku, z okresem ważności; zatwierdza administrator.
+- Strefy grafiki liczone automatycznie (`area: auto`) – nakładka rysuje tylko tam, gdzie jest grafika (mniej CPU); renderer natywny dla prostych stron, Chromium dla efektów, których `vizrs-render` nie umie.
+- **Znaki wodne** ErsatzTV rysowane nad grafiką VizRS; miniatury stron do wyboru w panelu.
+
+**Live ingest – studio na antenie**
+
+- Przejęcie kanału sygnałem RTMP / SRT, linkiem RTSP / HLS albo transmisją YouTube (odświeżanie ciasteczek konta przez yt-dlp); wybór wejścia w panelu.
+- **ZDEJMIJ / WPUŚĆ** – operator decyduje, czy studio wchodzi na antenę; osobna grafika i znak wodny na czas live (audycja vs studio poza audycją).
+- **Audycje LIVE w ramówce** – zaplanowane pozycje na żywo z planszą zastępczą, gdy studio nie nadaje; przebieg live w rozdzielczości kanału.
+
+**Panel kanału (MCR)**
+
+- **Na antenie**: co leci i co następne na każdym kanale, pasek postępu, warstwy VizRS z przyciskami Dalej / Zdejmij / Wprowadź stronę, zdjęcie całej grafiki, start / restart / stop emisji, podgląd grafiki `/output` i strumienia kanału, **mozaika** (0–16 podglądów).
+- **Ramówka**: kanały (numeracja, logo), harmonogramy klasyczne i blokowe, szablony dnia, wystrój (deco), kalendarz, playouty, import z CSV / XML, kontrola ramówki (luki, nakładki, brakujące pliki, kończące się playouty), przewodnik EPG.
+- **Media**: biblioteki, źródła zewnętrzne (Jellyfin, Emby, Plex), przeglądarka mediów z odtwarzaniem bezpośrednim, kolekcje, playlisty, wypełniacze, znaki wodne, profile kodowania (x264, NVENC, QSV, VAAPI).
+- **As-run i logi**: co faktycznie poszło na antenę (pozycje, strony grafiki, przejęcia) i logi systemu emisji na jednej osi czasu, eksport CSV.
+- **Konta i alarmy**: konta administratorów i operatorów (pierwsza konfiguracja kodem z logu), wspólne logowanie w pakiecie (Trio, Artist), alarmy w panelu (obraz i dźwięk) i webhook alarmów.
+- Podgląd strumieni w przeglądarce i oknie (MSE: H.264, AAC, HEVC i AC-3 tam, gdzie przeglądarka je dekoduje).
+
+**Granice**: nie zmienia kodu ErsatzTV i nie pisze do jego bazy (wszystko przez most); bez wbudowanego TLS (panel za reverse proxy); ingest nie transkoduje sygnału studia (wymaga H.264 + AAC); jeden sygnał live naraz na kanał; nie edytuje plików konfiguracyjnych na wolumenach.
+
+## 3. Kto z kim rozmawia
 
 ```
                 ┌────────────────────┐   deploy scen (HTTP /api/scenes, /api/assets)
@@ -55,9 +175,9 @@ Dawne osobne repozytorium VizRS Live (`sdorpl/VizRS-Live-Playout`) tworzy obecni
 
 Sidecar (`cg`) i panel (`live`, `panel/`) to jeden produkt **VizRS CG Playout** – jedna wersja, jedno wydanie.
 
-Dodatkowo przeglądarka operatora panelu VizRS CG Playout osadza ramkę `/output` CG Systemu (token wyjścia) i linkuje do Trio (`?channel=N`) – to styk tylko po stronie przeglądarki, serwer panelu nie rozmawia bezpośrednio z CG Systemem.
+Dodatkowo przeglądarka operatora panelu VizRS CG Playout osadza ramkę `/output` CG Systemu (token wyjścia) i linkuje do Trio (`?channel=N`) – to styk tylko po stronie przeglądarki, serwer panelu nie rozmawia bezpośrednio z CG Systemem. W oknie panelu (AppImage) ramka `/output` idzie przez lokalnego pośrednika okna (ta sama witryna co strona – ciasteczko tokenu wyjścia działa), a Trio otwiera się w przeglądarce systemowej.
 
-## 3. Styki (kontrakty) – kto jest dostawcą
+## 4. Styki (kontrakty) – kto jest dostawcą
 
 Szczegółowa specyfikacja wszystkich kontraktów i endpointów znajduje się w [STYKI.md](STYKI.md), a matryca kompatybilności wstecznej i weryfikacji wydań w [ZGODNOSC.md](ZGODNOSC.md).
 
@@ -74,7 +194,7 @@ Po połączeniu Live API `:7700` (sidecar ↔ panel, [`docs/API.md`](https://git
 
 Zasady (identyczne we wszystkich repo, [DOKUMENTACJA](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/DOKUMENTACJA.md) §1): styk zmienia się w obu repo naraz; starszy sąsiad nie może psuć emisji; wydania sprawdzane razem, minimalna wersja sąsiada w `CHANGELOG.md`.
 
-## 4. Wspólny kod (kopie, nie biblioteka)
+## 5. Wspólny kod (kopie, nie biblioteka)
 
 | Plik(i) | Źródło | Kopie | Pilnowanie |
 |---|---|---|---|
@@ -82,7 +202,7 @@ Zasady (identyczne we wszystkich repo, [DOKUMENTACJA](https://github.com/sdorpl/
 | `renderer.js`, `motion.js`, `cgpack.js`, `pack-ui.js`, `dom.js`, `qr.js`, `richtext.js`, `ticker-*.js`, `color-picker.js`, fonty | CG System `source/web/` | Artist `web/` (commit w `web/CG_SYSTEM`) | `sync-cg.sh --check` w CI Artist |
 | `gpu.rs`, `scale.rs`, `screen.rs` (okno Tauri na Linuksie: NVIDIA DMA-BUF, Skia CPU, XWayland przy skali ułamkowej), `conn_url.rs` (adres i token serwera w oknie połączenia) | CG System `source/shell/src/` | Artist `src/`, CG Playout `panel/desktop/src/` | **identyczne bajt w bajt** |
 
-## 5. Stos technologiczny
+## 6. Stos technologiczny
 
 | | CG System | CG Artist | CG Playout (sidecar + panel) |
 |---|---|---|---|
@@ -95,7 +215,7 @@ Zasady (identyczne we wszystkich repo, [DOKUMENTACJA](https://github.com/sdorpl/
 
 Wspólne cechy: Rust bez frameworków, UI bez bibliotek JS, wszystko po polsku, wersje kalendarzowe `RR.MM.N` (od 26.11.1, 2026-11-12; wcześniej semver), wydanie = tag `v*` → GitHub Actions (`release.yml`).
 
-## 6. Stos produkcyjny (Docker)
+## 7. Stos produkcyjny (Docker)
 
 Jeden projekt compose uruchamiany z katalogu **CG Playout** (z profilami `grafika` i `ingest`):
 
@@ -110,11 +230,11 @@ docker-compose.yml               seed · vizrs (CG System, :8788→8088) · cg (
 
 Obrazy produkcyjne w stosie: `vizrs`, `vizrs-cg`, `vizrs-seed`, `vizrs-live`, `vizrs-live-legacy` – wszystkie z tagiem `:latest` (decyzja D10 z 2026-11-16).
 
-Portainer GitOps (s1/s2) bierze stos z `main` CG Playout; `stack-refresh.yml` co 15 min aktualizuje `.release` (wersje obrazów), co przeładowuje stosy. Profile compose: `grafika` (silnik VizRS i sidecar), `ingest` (odbiorniki live, wymaga `grafika`); bez profilu – sam ErsatzTV z panelem. Stosy z grafiką mają `COMPOSE_PROFILES=grafika,ingest` i włączone „Re-pull image” (od 2026-11-16).
+Portainer GitOps (s1/s2/s3) bierze stos z `main` CG Playout; `stack-refresh.yml` co 15 min aktualizuje `.release` (wersje obrazów), co przeładowuje stosy. Profile compose: `grafika` (silnik VizRS i sidecar), `ingest` (odbiorniki live, wymaga `grafika`); bez profilu – sam ErsatzTV z panelem. Stosy z grafiką mają `COMPOSE_PROFILES=grafika,ingest` i włączone „Re-pull image” (od 2026-11-16).
 
 Porty: **8088** CG System (w stosie wystawiony jako 8788) · **6100** TCP VizRS · **7700** sidecar · **8090** panel · **8409** widzowie (Caddy) · **1936–1943** RTMP · **9000–9007/udp** SRT · Artist: tylko `127.0.0.1:20000–31999`.
 
-## 7. Słownik
+## 8. Słownik
 
 - **Trio** – stanowisko playoutu stron (CG System `/trio`); **Artist** – projektowanie scen; nazwy wzorowane na Vizrt.
 - **Scena / strona** – szablon graficzny / wypełniona instancja szablonu z numerem (np. `TAKE 7510`).
@@ -126,7 +246,7 @@ Porty: **8088** CG System (w stosie wystawiony jako 8788) · **6100** TCP VizRS 
 - **VizRS Bridge** – wtyczka C# ładowana do niezmienionego ErsatzTV legacy, wykonuje komendy MediatR z białej listy.
 - **ErsatzTV legacy / Next** – backend kanałów; Next = nowy silnik nadawania używany przez legacy.
 
-## 8. Stan połączenia
+## 9. Stan połączenia
 
 Pakiet po połączeniu składa się z 3 aplikacji:
 
