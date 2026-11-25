@@ -1,9 +1,46 @@
 # VizRS – pakiet grafiki i playoutu telewizyjnego
 
-Opis całego pakietu: co za co odpowiada, jak aplikacje współpracują i jaki tworzą stos.
+**Centrum projektu (hub i wiki) pakietu VizRS.** Tu jest opis całości: co robi każda aplikacja, jak współpracują,
+jakie mają styki, które wersje działają razem i jak wygląda stos produkcyjny – oraz spis całej dokumentacji projektu.
 Kod jest w trzech repozytoriach aplikacji: [VizRS-CG-System](https://github.com/sdorpl/VizRS-CG-System),
 [VizRS-CG-Artist](https://github.com/sdorpl/VizRS-CG-Artist) oraz [VizRS-CG-Playout](https://github.com/sdorpl/VizRS-CG-Playout).
-Dawne osobne repozytorium [VizRS-Live-Playout](https://github.com/sdorpl/VizRS-Live-Playout) zostało wchłonięte do CG Playout (`panel/`) i jest przeznaczone do archiwizacji.
+Dawne osobne repozytorium [VizRS-Live-Playout](https://github.com/sdorpl/VizRS-Live-Playout) zostało wchłonięte do CG Playout (`panel/`) i jest zarchiwizowane.
+
+## Spis dokumentacji projektu
+
+### Pakiet (to repozytorium)
+
+| Dokument | Co zawiera |
+|---|---|
+| [README.md](README.md) (ten plik) | mapa aplikacji (§1), **co robi każda aplikacja** (§2), kto z kim rozmawia (§3), styki w skrócie (§4), wspólny kod (§5), stos technologiczny (§6), stos produkcyjny i porty (§7), słownik (§8), stan połączenia (§9) |
+| [STYKI.md](STYKI.md) | wszystkie styki pakietu: protokół VizRS, formaty scen, Live API, most VizRS Bridge, API panelu, ErsatzTV, kod wspólny, logowanie w pakiecie; reguły zmian styku |
+| [ZGODNOSC.md](ZGODNOSC.md) | bieżące wydania aplikacji (obrazy, paczki) i minimalne wersje sąsiadów |
+| [PLAN-PORZADKOWANIA.md](PLAN-PORZADKOWANIA.md) | decyzje D1–D10 i połączenie VizRS Live z CG Playout (zakończone 2026-11-16) – zapis historyczny |
+| [PLAN-REFAKTORYZACJI.md](PLAN-REFAKTORYZACJI.md) | refaktoryzacja pakietu (zakończona, wydana 2026-11-19) – zapis historyczny |
+| [zrzuty/](zrzuty/) | zrzuty ekranów Trio i panelu z wdrożeń |
+
+### Dokumentacja aplikacji
+
+Opis działania, opcje, API i instrukcje są w repozytoriach aplikacji (zasada pakietu: jedno miejsce na każdą informację).
+
+| | [VizRS CG System](https://github.com/sdorpl/VizRS-CG-System) | [VizRS CG Artist](https://github.com/sdorpl/VizRS-CG-Artist) | [VizRS CG Playout](https://github.com/sdorpl/VizRS-CG-Playout) |
+|---|---|---|---|
+| Wprowadzenie | [README](https://github.com/sdorpl/VizRS-CG-System/blob/main/README.md) | [README](https://github.com/sdorpl/VizRS-CG-Artist/blob/main/README.md) | [README](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/README.md) |
+| Opis działania i opcje | [DOKUMENTACJA](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/DOKUMENTACJA.md) | [DOKUMENTACJA](https://github.com/sdorpl/VizRS-CG-Artist/blob/main/docs/DOKUMENTACJA.md) | [DOKUMENTACJA](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/DOKUMENTACJA.md) (sidecar §1–§8, panel §9–§15) |
+| API (dostawca) | [API](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/API.md) (HTTP, TCP, OSC, webhook), [COMPANION](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/COMPANION.md) | – (klient CG System) | [API](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/API.md) (Live API, API panelu, most) |
+| Instrukcja użytkownika | [INSTRUKCJA-poczatkujacy](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/INSTRUKCJA-poczatkujacy.md) | w [DOKUMENTACJI](https://github.com/sdorpl/VizRS-CG-Artist/blob/main/docs/DOKUMENTACJA.md) | [INSTRUKCJA](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/INSTRUKCJA.md) (operator, planista) |
+| Wdrożenie i awarie | [RUNBOOK](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/RUNBOOK.md) | – | [RUNBOOK](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/RUNBOOK.md) |
+| Zmiany | [CHANGELOG](https://github.com/sdorpl/VizRS-CG-System/blob/main/CHANGELOG.md) | [wydania](https://github.com/sdorpl/VizRS-CG-Artist/releases) | [CHANGELOG](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/CHANGELOG.md) |
+| Stan prac i znane braki | [STATUS](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/STATUS.md), [LUKI](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/LUKI.md) | [STATUS](https://github.com/sdorpl/VizRS-CG-Artist/blob/main/docs/STATUS.md), [LUKI](https://github.com/sdorpl/VizRS-CG-Artist/blob/main/docs/LUKI.md) | [STATUS](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/STATUS.md), [LUKI](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/LUKI.md) |
+| Plany | [docs/plany](https://github.com/sdorpl/VizRS-CG-System/tree/main/docs/plany) | [docs/plany](https://github.com/sdorpl/VizRS-CG-Artist/tree/main/docs/plany) | [docs/plany](https://github.com/sdorpl/VizRS-CG-Playout/tree/main/docs/plany) |
+| Wydania (pliki do pobrania) | [releases](https://github.com/sdorpl/VizRS-CG-System/releases) | [releases](https://github.com/sdorpl/VizRS-CG-Artist/releases) | [releases](https://github.com/sdorpl/VizRS-CG-Playout/releases) |
+| Zasady pracy (ludzie i agenci) | [CLAUDE.md](https://github.com/sdorpl/VizRS-CG-System/blob/main/CLAUDE.md), [AGENCI](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/AGENCI.md) – źródło zasad pakietu | [CLAUDE.md](https://github.com/sdorpl/VizRS-CG-Artist/blob/main/CLAUDE.md) | [CLAUDE.md](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/CLAUDE.md) |
+
+### Jak utrzymywać to repozytorium
+
+- **Tu** jest wszystko, co dotyczy więcej niż jednej aplikacji: opis pakietu i każdej aplikacji (README §2), styki (STYKI.md), zgodność wydań (ZGODNOSC.md), stos i porty. Szczegóły jednej aplikacji – tylko w jej repozytorium, tu najwyżej odnośnik.
+- **Po każdym wydaniu aplikacji:** wiersz w ZGODNOSC.md (wersja, data, pliki, nowe minimalne wersje sąsiadów); gdy zmienia się funkcja albo styk – README §1–§2 i STYKI.md.
+- **Nowy dokument w aplikacji** – wiersz w spisie powyżej.
 
 ## Mapa aplikacji i stosu
 
