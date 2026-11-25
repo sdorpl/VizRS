@@ -28,7 +28,7 @@ Główny protokół komunikacyjny silnika grafiki czasu rzeczywistego. Obejmuje 
 - **HTTP / SSE (`/api/show`, zdarzenia):** 
   - REST API serwera `vizrs`: odczyt całego projektu (`GET /api/show`), modyfikacja elementów (`/scenes`, `/pages`, `/playlists`, `/rundowns`, `/macros`), stan silnika (`GET /api/state`), zmienne dla kontrolerów (`GET /api/variables`), lista kanałów (`/api/channels`), zasoby binarne (`/api/assets`), wbudowane czcionki (`/api/fonts`) oraz kontrola zdrowia (`GET /health`, `GET /api/health`).
   - Strumień zdarzeń SSE (`GET /events`): jednokierunkowy strumień zdarzeń w czasie rzeczywistym (`snapshot`, `take`, `continue`, `out`, `clear`, `update`, `rescene`, `relayer`, `dock`, `show`, `state`, `error`, `wordreplace`). Silnik nie korzysta z protokołu WebSocket.
-- **Token wyjścia (`--output-token`):** Specjalny token ograniczający uprawnienia klienta wyłącznie do bezpiecznego odczytu: `GET /output`, `/events`, `/fonts/*`, `/assets/*`, `/health`, `GET /api/assets`, `POST /api/report`. Wszelkie próby modyfikacji stanu i konfiguracji kończą się kodem HTTP 403. Przeglądarka panelu VizRS CG Playout używa go do bezpiecznego osadzania ramki podglądu PGM bez ryzyka przejęcia uprawnień operatorskich.
+- **Token wyjścia (`--output-token`):** Specjalny token ograniczający uprawnienia klienta wyłącznie do bezpiecznego odczytu: `GET /output`, `/events`, `/fonts/*`, `/assets/*`, `/health`, `GET /api/assets`, `POST /api/report`. Wszelkie próby modyfikacji stanu i konfiguracji kończą się kodem HTTP 403. Przeglądarka panelu VizRS CG Playout używa go do bezpiecznego osadzania ramki podglądu PGM bez ryzyka przejęcia uprawnień operatorskich. Po wejściu na `/output?token=…` serwer ustawia ciasteczko `vizrs_token` (`SameSite=Strict`), którym autoryzuje skrypty strony i `/events`; dlatego ramka działa tylko z tej samej witryny co strona osadzająca – w oknie panelu (AppImage, strona na `127.0.0.1`) ramka idzie przez lokalnego pośrednika okna (§5).
 
 ---
 
@@ -76,15 +76,15 @@ Interfejs REST sidecara grafiki i live ingestu (`vizrs-cg`) wchodzący w skład 
   - `GET /etv/pages?channel=<n>` – lista stron skonfigurowanych dla kanału w ErsatzTV.
   - `GET /ingest/state?channel=<n>` – informacja czy dany kanał jest aktualnie przejęty przez sygnał live (`"live": true|false`).
   - `GET /ffmpeg?channel=<n>`, `GET /ffmpeg/frames`, `GET /ffmpeg/zones` – wewnętrzne punkty przejmowania sesji klatek nakładki ffmpeg i dynamicznej aktualizacji stref.
-  - `GET /api/live/state` – całościowy stan: parametry sygnału live (kodek, parametry audio, czas trwania), stany `on_air`, `takeover`, `hold`, `anytime`, audycje LIVE z EPG, lista portów wejściowych `inputs`, zdarzenia oraz pole `features` (zgłoszenie obsługiwanych funkcji, np. `["layers", "take", "asrun", "encoder", "thumbs", "on_live", "webhook", "logs"]`).
+  - `GET /api/live/state` – całościowy stan: parametry sygnału live (kodek, parametry audio, czas trwania), stany `on_air`, `takeover`, `hold`, `anytime`, audycje LIVE z EPG, lista portów wejściowych `inputs`, zdarzenia oraz pole `features` – lista obsługiwanych funkcji, po której panel włącza swoje widoki (starszy sidecar = brak funkcji, nie błąd). W 26.11.31: `layers`, `take`, `asrun`, `encoder`, `thumbs`, `logs`, `on_live`, `input_on_live`, `live_watermark`, `input_select`, `youtube_cookies`, `events`, `approval`, `webhook`, `library`, `store`, `graphics_off`, `graphics_off_since`.
   - `POST /api/live/channels/<n>/hold` oraz `/release` – natychmiastowe wstrzymanie (powrót do ramówki) i przywrócenie sygnału studia na antenę.
-  - `PUT /api/live/channels/<n>` – zmiana flagi `anytime` (przejmowanie kanału poza zdefiniowanymi oknami audycji LIVE).
+  - `PUT /api/live/channels/<n>` – zmiana flagi `anytime` (przejmowanie kanału poza zdefiniowanymi oknami audycji LIVE) oraz wybór wejścia kanału `{"input": id|null}` (`input_select`; `null` = automatycznie – pierwsze z sygnałem).
   - `POST /api/live/channels/<n>/rebuild` – zlecenie resetu playoutu kanału w ErsatzTV.
   - `POST /api/live/channels/<n>/take`, `/continue`, `/out` – ręczne wyzwalanie komend grafiki na antenie danego kanału z poziomu panelu (Quick Take).
   - `GET|POST|PUT|DELETE /api/live/shows` – zarządzanie audycjami LIVE w ErsatzTV (tworzenie plików `.yml`, wyzwalanie skanowania biblioteki, zakładanie Smart Collections).
-  - `GET|PUT /api/live/graphics` – odczyt i modyfikacja reguł automatycznej grafiki (`graphics.json`).
+  - `GET|PUT /api/live/graphics` – odczyt i modyfikacja reguł automatycznej grafiki (`graphics.json`), w tym zdarzeń wtórnych (`secondary`: strony w zadanych chwilach pozycji wybranej po tytule, ścieżce pliku albo starcie, z datami ważności i zatwierdzaniem – `events`, `approval`; zatwierdza tylko administrator panelu).
   - `POST /api/live/graphics/off` oraz `/on` – zdjęcie i przywrócenie grafiki kanału z odegraniem pełnych animacji wyjścia/wejścia.
-  - `GET|PUT /api/live/inputs` – konfiguracja odbiorników ingestu RTMP (zakres portów 1936–1943) oraz SRT (zakres 9000–9007).
+  - `GET|PUT /api/live/inputs` – konfiguracja wejść kanałów: odbiorniki RTMP (porty 1936–1943) i SRT (9000–9007), transmisje YouTube i strumienie z linku (HLS, RTMP, SRT, RTSP) pobierane przez sidecar; grafika i znak wodny na czas przejęcia z danego wejścia (`on_live`, `live_watermark`); ciasteczka konta YouTube (`youtube_cookies`).
   - `GET|PUT /api/live/encoder` – parametry kodera w nakładce ffmpeg (presety, profile x264/NVENC/QSV, parametry klatek B).
   - `GET /api/live/thumbs/<numer>.png` – serwowanie miniatur wygenerowanych przez `vizrs-render thumb` (buforowane w `<etv_config>/vizrs-live/thumbs/`).
   - `GET /api/live/asrun` – dziennik zdarzeń emisyjnych as-run w formacie JSONL (czasy w UTC, retencja 30 dni).
@@ -114,6 +114,7 @@ Wewnętrzny styk integracyjny produktu VizRS CG Playout. Zapewnia bezpieczną ko
   - `POST /vizrs-bridge/session/{kanał}/stop` – zatrzymanie sesji emisyjnej danego kanału.
   - `POST /vizrs-bridge/upload/{Logo|Watermark}` – zapis plików graficznych do pamięci legacy z pominięciem jej web GUI.
   - `GET /vizrs-bridge/framerates` oraz `POST /vizrs-bridge/framerate/{IdProfilu}` – kontrola stałego klatkażu w profilach FFmpeg (np. wymuszenie 25 kl./s dla standardu telewizyjnego).
+  - `GET /vizrs-bridge/watermarks/{kanał}/{IdPozycji}` – znaki wodne, które legacy rysowałby w płótnie grafiki pozycji (wybór, położenie, skala, krycie); klient: nakładka `vizrs-ffmpeg`, która rysuje je sama nad grafiką VizRS. `GET /vizrs-bridge/watermarks/{kanał}?ids=…` – wybrane znaki wodne na czas przejęcia przez live ingest (`live_watermark`). Wymaga `VIZRS_BRIDGE_TOKEN` także w kontenerze ErsatzTV.
 
 ---
 
@@ -124,12 +125,13 @@ Wewnętrzny interfejs serwera aplikacji panelu VizRS CG Playout (`panel/server/`
 | Element | Dostawca | Klienci | Opis u dostawcy |
 |---|---|---|---|
 | **`/api/*`** | VizRS CG Playout (`panel/server/` – `vizrs-live`) | Przeglądarka internetowa operatora, okno desktopowe (Tauri 2 w `panel/desktop/`) | [VizRS-CG-Playout: docs/API.md §2](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/API.md#2-api-panelu-api) |
-| **Token panelu i sesje** | VizRS CG Playout (`vizrs-live`) | Przeglądarka internetowa, klient okienny | [VizRS-CG-Playout: docs/API.md §2](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/API.md#2-api-panelu-api) |
+| **Konta, token panelu i sesje** | VizRS CG Playout (`vizrs-live`) | Przeglądarka internetowa, klient okienny | [VizRS-CG-Playout: docs/API.md §2](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/API.md#2-api-panelu-api) |
 | **Nagłówek `X-VizRS-Live`** | Klient UI panelu (SPA / Tauri 2) | Serwer panelu VizRS CG Playout | [VizRS-CG-Playout: docs/API.md §2](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/API.md#2-api-panelu-api) |
 
 ### Szczegóły techniczne elementów styku
 - **Charakter styku:** Wewnętrzny styk aplikacji VizRS CG Playout (port domyślny 8090).
 - **Bezpieczeństwo i sesje:**
+  - **Konta operatorów** (gdy panel ma katalog danych): `GET /api/auth` (czy logowanie wymagane, czy są konta), `POST /api/setup` (pierwsze konto administratora z kodem z logu), `POST /api/login` z `{"user","password"}`, `POST /api/logout`, zarządzanie kontami `/api/users…` (tylko administrator); role `admin` i `operator`. Token panelu działa dalej jako ścieżka awaryjna i dla paneli bez kont.
   - Logowanie za pomocą tokenu (`POST /api/login`) tworzy sesję w pamięci serwera (do 256 sesji, identyfikator 32-bajtowy) i ustawia ciasteczko `vizrs_live` (HttpOnly, SameSite=Strict, retencja 30 dni bezczynności). Skrypty mogą autoryzować się nagłówkiem `Authorization: Bearer <token>`.
   - Żądania modyfikujące (`POST`, `PUT`, `DELETE`) bezwzględnie wymagają obecności nagłówka `X-VizRS-Live: 1`, co uniemożliwia ich wykonanie z poziomu obcych witryn (zabezpieczenie CSRF).
   - Ochrona przed atakami brute-force: limit 10 błędnych prób logowania na 60 sekund na adres IP klienta.
@@ -144,6 +146,7 @@ Wewnętrzny interfejs serwera aplikacji panelu VizRS CG Playout (`panel/server/`
   - `POST /api/play/*` – testowe uruchamianie pozycji z poziomu przeglądarki.
   - `GET /api/artwork/*` – serwowanie grafik i okładek z bazy mediów.
   - `POST /api/vod/open`, `GET /api/vod/{id}` – bezpośrednie odtwarzanie materiałów VOD (Jellyfin / pliki lokalne) z obsługą nagłówków `Range: bytes` bez transkodowania przez ErsatzTV.
+- **Okno panelu (`panel/desktop/`, AppImage) jako klient:** łączy się z panelem na serwerze przez lokalnego pośrednika (`127.0.0.1`, losowy port), który dokleja token albo sesję konta – strona okna nie zna ani tokenu, ani identyfikatora sesji (sesję konta zapisuje program w `live-connections.json`). Drugi port pośrednika obsługuje tylko ramkę podglądu VizRS `/output`: adres VizRS bierze z `vizrsUrl` w `GET /api/status`, a stronie dopisuje tam `vizrsOutputProxy`, którego `core.js` panelu używa wyłącznie dla `/output` (od 26.11.31). Trio i inne odnośniki zewnętrzne otwiera przeglądarka systemowa.
 
 ---
 
@@ -190,6 +193,24 @@ Współdzielone pliki źródłowe, komponenty wyglądu oraz moduły okna natywne
   - `conn_url.rs`: Sprawdzanie adresu (`normalize_url`) i tokenu (`valid_token`) serwera w oknie „Połącz z serwerem”; reszta `connect.rs` różni się między oknami i nie jest synchronizowana.
 - **Zasady pakietu:** Bloki wspólne (`pakiet:A`, `pakiet:B`, `pakiet:C`, `pakiet:D`, `pakiet:S`) w plikach instrukcji agentów (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `docs/AGENCI.md`) są dystrybuowane skryptem `tools/sync-zasady.sh`.
 - **Moduły strony Artist:** Moduły `renderer.js`, `motion.js`, `qr.js`, `richtext.js`, `ticker-*.js`, `color-picker.js`, `cgpack.js`, `pack-ui.js`, `dom.js` (zapis HTML szablonem `html` z escapowaniem), `ui.css` oraz zestawy fontów offline w VizRS CG Artist są kopiami z `source/web/` w VizRS CG System (wersja odnotowywana w pliku `web/CG_SYSTEM`). Wszelkie zmiany logiki rysowania muszą być najpierw wprowadzane w silniku CG System, a następnie propagowane do edytora Artist.
+
+---
+
+## 8. Logowanie w pakiecie (konta panelu w Trio i Artist)
+
+Opcjonalny styk między panelem VizRS CG Playout (dostawca kont) a VizRS CG System (Trio, a przez serwer `vizrs` także okno VizRS CG Artist): jedno konto w całym stosie. Domyślnie wyłączony – administrator panelu włącza przełącznik „Logowanie w pakiecie VizRS” (ekran Użytkownicy).
+
+| Element | Dostawca | Klienci | Opis u dostawcy |
+|---|---|---|---|
+| **`/api/sso`, `/api/sso/verify`, `/api/sso/session`** | VizRS CG Playout (`vizrs-live`) | VizRS CG System (`--panel-login` / `VIZRS_PANEL_LOGIN`) | [VizRS-CG-Playout: docs/API.md §2](https://github.com/sdorpl/VizRS-CG-Playout/blob/main/docs/API.md#2-api-panelu-api) |
+| **`/login/info`, `/login`, `/logout`, ciasteczko `vizrs_session`** | VizRS CG System (`vizrs`) | Trio (przeglądarka, `vizrs-shell`), okno VizRS CG Artist („Połącz z serwerem”) | [VizRS-CG-System: docs/API.md](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/API.md), [docs/DOKUMENTACJA.md §12](https://github.com/sdorpl/VizRS-CG-System/blob/main/docs/DOKUMENTACJA.md) |
+
+### Szczegóły techniczne elementów styku
+- **Weryfikacja konta:** serwer `vizrs` przekazuje login i hasło do `POST /api/sso/verify` panelu (ten sam limit prób co logowanie w panelu) i dostaje użytkownika z rolą oraz sesję; ciasteczko `vizrs_session` działa w `vizrs` jak token operatora, a log audytowy podpisuje operacje kontem.
+- **Wspólna sesja:** kto jest zalogowany w panelu pod tym samym adresem serwera, wchodzi do Trio bez ponownego logowania (`GET /api/sso/session` z ciasteczkiem panelu).
+- **Ważność:** serwer `vizrs` sprawdza sesję w panelu co 15 s – usunięcie konta, zmiana hasła albo wyłączenie przełącznika kończy sesję w Trio najpóźniej po 15 s. Gdy panel nie odpowiada, zalogowane Trio działa dalej.
+- **Zgodność:** token serwera `vizrs` działa zawsze; Trio uruchomione samodzielnie (np. dla OBS) nie zależy od panelu; starszy VizRS albo panel bez kont = logowanie tylko tokenem. W stosie CG Playout nakładka `docker-compose.live.yml` ustawia `VIZRS_PANEL_LOGIN=http://live:8090`.
+- **Okno VizRS CG Artist (26.11.12) i `vizrs-shell` (26.11.13):** okno połączenia przyjmuje login i hasło, gdy `GET /login/info` serwera zgłasza logowanie kontem panelu; sesję trzyma program (nie strona).
 
 ---
 
