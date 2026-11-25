@@ -75,11 +75,11 @@ co jest na antenie, i rysuje to na przezroczystym wyjściu, które pobierają OB
 
 **Składniki**
 
-- **`vizrs`** – serwer (Rust, bez zależności zewnętrznych): HTTP/1.1 z interfejsem webowym, strumień zdarzeń SSE `/events`, komendy tekstowe TCP 6100, OSC (UDP), webhooki; atomowy zapis show i dziennik zdarzeń.
+- **`vizrs`** *(CLI + web)* – serwer (Rust, bez zależności zewnętrznych): HTTP/1.1 z interfejsem webowym, strumień zdarzeń SSE `/events`, komendy tekstowe TCP 6100, OSC (UDP), webhooki; atomowy zapis show i dziennik zdarzeń.
 - **Trio (`/trio`)** – stanowisko operatora grafiki: wybór i wypełnianie stron, TAKE / CONTINUE / OUT, podgląd, rundown, karuzele, makra; układ dopasowuje się do telefonu i tabletu.
 - **Wyjście (`/output`)** – przezroczysta strona 1920×1080 renderowana przez `renderer.js`; parametry wybierają warstwy, antenę (`bus=preview`, `bus=ch-N`), tło, tryb Fill / Key dla mikserów, obniżony klatkaż dla kanałów bez GPU.
-- **`vizrs-shell`** – natywne okno (Tauri 2) dla Trio i wyjścia: menu, wiele monitorów, ikona w zasobniku, skróty globalne, logowanie tokenem albo kontem panelu; `vizrs trio|output|artist` otwiera też okno Chromium/Edge bez pasków.
-- **`vizrs-render`** – renderer natywny na CPU (tiny-skia, rustybuzz) bez przeglądarki: strumień klatek dla playoutu kanału (`stream`), miniatury (`thumb`), obrysy grafiki (`bounds`); obsługuje ruch presetów 2D i obrazy WebP.
+- **`vizrs-shell`** *(okno natywne)* – natywne okno (Tauri 2) dla Trio i wyjścia: menu, wiele monitorów, ikona w zasobniku, skróty globalne, logowanie tokenem albo kontem panelu; `vizrs trio|output|artist` otwiera też okno Chromium/Edge bez pasków.
+- **`vizrs-render`** *(tylko CLI)* – renderer natywny na CPU (tiny-skia, rustybuzz) bez przeglądarki: strumień klatek dla playoutu kanału (`stream`), miniatury (`thumb`), obrysy grafiki (`bounds`); obsługuje ruch presetów 2D i obrazy WebP.
 - **`/artist`** – dawny webowy edytor scen, zamrożony (nowe funkcje projektowe są tylko w VizRS CG Artist).
 - Dystrybucja: binarki, `.deb` / `.rpm` / AppImage, instalator Windows, obraz Docker `ghcr.io/sdorpl/vizrs` (~3 MB, amd64 / arm64).
 
@@ -147,12 +147,12 @@ stacji. Jedna wersja i jedno wydanie dla wszystkich składników.
 
 **Składniki**
 
-- **`vizrs-cg`** (sidecar, Rust) – wysyła do CG System komendy grafiki według tego, co leci w ramówce; prowadzi renderer kanału (Chromium headless albo `vizrs-render`), taśmę tickera, strefy grafiki, odbiorniki live; podaje panelowi Live API (`:7700`).
+- **`vizrs-cg`** (sidecar, Rust) *(CLI + API, bez własnego UI)* – wysyła do CG System komendy grafiki według tego, co leci w ramówce; prowadzi renderer kanału (Chromium headless albo `vizrs-render`), taśmę tickera, strefy grafiki, odbiorniki live; podaje panelowi Live API (`:7700`).
 - **`vizrs-ffmpeg`** – nakładka zamiast ffmpeg w kontenerze ErsatzTV: wtapia grafikę i znaki wodne w obraz kanału, przełącza kanał na sygnał live (takeover) bez przerwy dla widzów.
 - **`vizrs-etv-client`** – klient elementu „script” ErsatzTV: przekazuje dane pozycji (tytuł, następna pozycja, czasy) do sidecara.
 - **VizRS Bridge** (C# / .NET 10) – wtyczka ładowana do ErsatzTV legacy: wykonuje komendy MediatR z białej listy (kanały, harmonogramy, playouty, media, sesje); kodu ErsatzTV nie zmienia.
-- **`vizrs-live`** – serwer panelu (Rust, bez zależności) z wbudowanym interfejsem SPA, kontami operatorów i pośrednikiem do mostu i sidecara (`:8090`).
-- **Okno panelu** (`panel/desktop/`, Tauri 2, AppImage) – natywny klient panelu na serwerze dla stanowiska operatora: token i sesja konta zostają w programie; podgląd strumieni (GStreamer w paczce) i grafiki VizRS przez lokalnego pośrednika.
+- **`vizrs-live`** *(CLI + web)* – serwer panelu (Rust, bez zależności) z wbudowanym interfejsem SPA, kontami operatorów i pośrednikiem do mostu i sidecara (`:8090`).
+- **Okno panelu** (`panel/desktop/`, Tauri 2, AppImage) *(okno natywne, tylko Linux)* – natywny klient panelu na serwerze dla stanowiska operatora: token i sesja konta zostają w programie; podgląd strumieni (GStreamer w paczce) i grafiki VizRS przez lokalnego pośrednika.
 - **Proxy widzów** (Caddy, `:8409`) – na zewnątrz tylko strumienie HLS / TS, listy M3U, EPG XMLTV i HDHomeRun; web GUI legacy i most zablokowane.
 - Obrazy Docker: `vizrs-cg`, `vizrs-seed` (dane startowe), `vizrs-live`, `vizrs-live-legacy` (ErsatzTV z mostem); stos compose z profilami `grafika` i `ingest`.
 
@@ -192,7 +192,19 @@ który trzyma token lub sesję konta (strona w oknie ich nie zna).
 |---|---|---|---|---|---|
 | **VizRS Trio** (`vizrs-shell`) | CG System | okno Trio i podglądu wyjścia; bez serwera zdalnego uruchamia lokalny `vizrs` jako osobny proces (awaria okna nie zdejmuje anteny), z `--connect` łączy się z serwerem zdalnym (token albo konto panelu); zasobnik, skróty globalne TAKE / CONTINUE / OUT, wiele monitorów | AppImage `VizRS-Trio-…-x86_64.AppImage`, `vizrs_…_amd64.deb`, archiwum `.tar.gz` (x86_64) | instalator `VizRS-Trio-…-windows-x86_64-setup.exe` (Menu Start, bez uprawnień administratora albo dla wszystkich), archiwum `.zip` | archiwum `.tar.gz` (Apple Silicon, arm64) z binarkami `vizrs`, `vizrs-shell` – bez paczki `.app` / `.dmg` |
 | **VizRS CG Artist** (`vizrs-cg-artist`) | CG Artist | edytor scen i animacji; działa lokalnie bez serwera albo na serwerze zdalnym `vizrs`; otwiera pliki `.cgpack` | `.deb`, `.rpm`, AppImage (x86_64) | `.msi` i instalator `.exe` (x86_64) | `.dmg` (Apple Silicon, aarch64) |
-| **Okno panelu VizRS CG Playout** (`vizrs-live-desktop`) | CG Playout | natywny klient panelu kanału na serwerze (token albo konto operatora); podgląd strumieni (GStreamer w paczce) i grafiki VizRS `/output` przez lokalnego pośrednika, Trio i odnośniki – w przeglądarce systemowej | AppImage `VizRS-CG-Playout-…-x86_64.AppImage` | – (panel w przeglądarce) | – (panel w przeglądarce) |
+| **Okno panelu VizRS CG Playout** (`vizrs-live-desktop`) | CG Playout | natywny klient panelu kanału na serwerze (token albo konto operatora); podgląd strumieni (GStreamer w paczce) i grafiki VizRS `/output` przez lokalnego pośrednika, Trio i odnośniki – w przeglądarce systemowej | AppImage `VizRS-CG-Playout-…-x86_64.AppImage` | **tylko web** – panel w przeglądarce | **tylko web** – panel w przeglądarce |
+
+**Składniki tylko CLI + web (bez okna natywnego):** uruchamia się je z wiersza poleceń, jako usługę albo w Dockerze,
+a obsługuje przez przeglądarkę albo API.
+
+| Składnik | Aplikacja | Obsługa | Systemy |
+|---|---|---|---|
+| serwer `vizrs` | CG System | CLI (`vizrs serve`, opcje i zmienne `VIZRS_*`) + web: Trio `/trio`, wyjście `/output`, zamrożony `/artist` w przeglądarce | Linux, Windows, macOS (archiwa, usługa systemd / launchd / NSSM), Docker |
+| `vizrs-render` | CG System | tylko CLI (`stream`, `thumb`, `bounds`), bez UI – uruchamia go sidecar | Linux, w obrazie `vizrs-cg` |
+| sidecar `vizrs-cg` (+ `vizrs-ffmpeg`, `vizrs-etv-client`) | CG Playout | CLI / usługa + Live API HTTP `:7700`, bez własnego UI – obsługa przez panel | Linux x86_64 / arm64 (archiwa), Docker |
+| serwer panelu `vizrs-live` | CG Playout | CLI (opcje i zmienne `VIZRS_LIVE_*`) + web: panel kanału w przeglądarce (`:8090`); okno natywne tylko na Linuksie | Linux x86_64 / arm64 (archiwa), Docker; panel w przeglądarce na każdym systemie |
+| VizRS Bridge | CG Playout | bez UI – wtyczka w procesie ErsatzTV, HTTP `/vizrs-bridge/*` | Docker (`vizrs-live-legacy`) |
+| ErsatzTV legacy / Next | zewnętrzny | web GUI legacy (operator pracuje w panelu VizRS; dla widzów zablokowane) | Docker |
 
 Uwagi:
 
