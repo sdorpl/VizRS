@@ -15,6 +15,7 @@ Dawne osobne repozytorium [VizRS-Live-Playout](https://github.com/sdorpl/VizRS-L
 | [README.md](README.md) (ten plik) | mapa aplikacji (§1), **co robi każda aplikacja** (§2) i aplikacje natywne na Linux, Windows, macOS (§2.4), kto z kim rozmawia (§3), styki w skrócie (§4), wspólny kod (§5), stos technologiczny (§6), stos produkcyjny i porty (§7), słownik (§8), stan połączenia (§9) |
 | [STYKI.md](STYKI.md) | wszystkie styki pakietu: protokół VizRS, formaty scen, Live API, most VizRS Bridge, API panelu, ErsatzTV, kod wspólny, logowanie w pakiecie; reguły zmian styku |
 | [ZGODNOSC.md](ZGODNOSC.md) | bieżące wydania aplikacji (obrazy, paczki) i minimalne wersje sąsiadów |
+| [ZASADY.md](ZASADY.md) | zasady całego pakietu: gdzie są i jak się zmieniają, bloki wspólne w skrócie, zasady wynikające z aplikacji (Z1–Z13), niezgodności do usunięcia (N1–N8) |
 | [PLAN-PORZADKOWANIA.md](PLAN-PORZADKOWANIA.md) | decyzje D1–D10 i połączenie VizRS Live z CG Playout (zakończone 2026-11-16) – zapis historyczny |
 | [PLAN-REFAKTORYZACJI.md](PLAN-REFAKTORYZACJI.md) | refaktoryzacja pakietu (zakończona, wydana 2026-11-19) – zapis historyczny |
 | [zrzuty/](zrzuty/) | zrzuty ekranów Trio i panelu z wdrożeń |
