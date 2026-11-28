@@ -4,7 +4,7 @@ Tabela jest aktualizowana przy każdym wydaniu aplikacji pakietu VizRS; wszystki
 
 ## Bieżące wersje
 
-Stan na 2026-11-26. Stosy produkcyjne s1, s2 i s3 (Portainer) pracują na tych wersjach (obrazy `:latest`).
+Stan na 2026-11-27. Stosy produkcyjne s1, s2 i s3 (Portainer) pracują na tych wersjach (obrazy `:latest`).
 
 | Aplikacja | Ostatnie wydanie | Data | Obrazy / paczki |
 |---|---|---|---|

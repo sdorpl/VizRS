@@ -1,6 +1,8 @@
 # Refaktoryzacja pakietu VizRS – raport i plan
 
-> Stan na 2026-11-17: CG System 26.11.10 (`272452c`), CG Artist 26.11.10 (`df1318f`), CG Playout 26.11.13 (`7ea8dcb`).
+> **Zakończony (2026-11-19):** gałęzie `refaktor` scalone do `main` i wydane – CG System 26.11.11, CG Artist 26.11.11, CG Playout 26.11.15 (§8–§9; gałęzie usunięte). Punkty spoza zakresu zamknięte decyzjami z 2026-11-18 (§9): S4 – `renderer.js` nie dzielić, pętle na żywo (P4–P7) – zostawić, P9 – pominąć.
+>
+> Stan raportu na 2026-11-17: CG System 26.11.10 (`272452c`), CG Artist 26.11.10 (`df1318f`), CG Playout 26.11.13 (`7ea8dcb`).
 > To jest **raport przed zmianami**: w kodzie nic jeszcze nie zmieniono. Liczby pochodzą z pomiarów skryptami na `main`
 > (długości funkcji liczone dopasowaniem nawiasów, powielenia liczone blokami po 10 znormalizowanych wierszy). Mogą się różnić
 > o kilka wierszy, ale proporcje się zgadzają.
