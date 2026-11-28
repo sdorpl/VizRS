@@ -41,6 +41,9 @@ Opis działania, opcje, API i instrukcje są w repozytoriach aplikacji (zasada p
 - **Tu** jest wszystko, co dotyczy więcej niż jednej aplikacji: opis pakietu i każdej aplikacji (README §2), styki (STYKI.md), zgodność wydań (ZGODNOSC.md), stos i porty. Szczegóły jednej aplikacji – tylko w jej repozytorium, tu najwyżej odnośnik.
 - **Po każdym wydaniu aplikacji:** wiersz w ZGODNOSC.md (wersja, data, pliki, nowe minimalne wersje sąsiadów); gdy zmienia się funkcja albo styk – README §1–§2 i STYKI.md.
 - **Nowy dokument w aplikacji** – wiersz w spisie powyżej.
+- **Stan prac (§9 „Stan prac i otwarte plany”)** – poprawiany razem ze `docs/STATUS.md` aplikacji: po wydaniu i po każdej zmianie otwartych planów. Wersje w §9 = wersje w ZGODNOSC.md; data „Stan na” w ZGODNOSC.md = data ostatniego wydania w tabeli.
+- **Plany pakietu** (`PLAN-*.md` w tym repo) mają stan w nagłówku; po zakończeniu – „zakończony” z datą i wersjami wydań, w spisie „zapis historyczny”.
+- Zasady dokumentacji stanu w aplikacjach (jedno źródło stanu planu, STATUS przy wydaniu, plan w innym repo, porządki po scaleniu, numery propozycji) są w bloku B zasad pakietu (`CLAUDE.md`, źródło: VizRS CG System); `tools/check-docs.sh` pilnuje w CI `CHANGELOG.md` i daty `docs/STATUS.md` każdej aplikacji.
 
 ## Mapa aplikacji i stosu
 
