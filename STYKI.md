@@ -74,12 +74,13 @@ Interfejs REST sidecara grafiki i live ingestu (`vizrs-cg`) wchodzący w skład 
 - **Główne punkty końcowe Live API:**
   - `GET /health` – status działania sidecara, metryki stref grafiki (`zones`: liczba śladów stron, granice, aktywne przebiegi nakładki).
   - `GET /etv/pages?channel=<n>` – lista stron skonfigurowanych dla kanału w ErsatzTV.
-  - `GET /ingest/state?channel=<n>` – informacja czy dany kanał jest aktualnie przejęty przez sygnał live (`"live": true|false`).
+  - `GET /ingest/state?channel=<n>` – informacja czy dany kanał jest aktualnie przejęty przez sygnał live (`"live": true|false`); od 26.11.36 także `"window"` – tytuł trwającego okna nagłej emisji albo `null`.
   - `GET /ffmpeg?channel=<n>`, `GET /ffmpeg/frames`, `GET /ffmpeg/zones` – wewnętrzne punkty przejmowania sesji klatek nakładki ffmpeg i dynamicznej aktualizacji stref.
   - `GET /api/live/state` – całościowy stan: parametry sygnału live (kodek, parametry audio, czas trwania), stany `on_air`, `takeover`, `hold`, `anytime`, audycje LIVE z EPG, lista portów wejściowych `inputs`, zdarzenia oraz pole `features` – lista obsługiwanych funkcji, po której panel włącza swoje widoki (starszy sidecar = brak funkcji, nie błąd). W 26.11.31: `layers`, `take`, `asrun`, `encoder`, `thumbs`, `logs`, `on_live`, `input_on_live`, `live_watermark`, `input_select`, `youtube_cookies`, `events`, `approval`, `webhook`, `library`, `store`, `graphics_off`, `graphics_off_since`.
   - `POST /api/live/channels/<n>/hold` oraz `/release` – natychmiastowe wstrzymanie (powrót do ramówki) i przywrócenie sygnału studia na antenę.
   - `PUT /api/live/channels/<n>` – zmiana flagi `anytime` (przejmowanie kanału poza zdefiniowanymi oknami audycji LIVE) oraz wybór wejścia kanału `{"input": id|null}` (`input_select`; `null` = automatycznie – pierwsze z sygnałem).
-  - `POST /api/live/channels/<n>/rebuild` – zlecenie resetu playoutu kanału w ErsatzTV.
+  - `POST /api/live/channels/<n>/rebuild` – zlecenie resetu playoutu kanału w ErsatzTV (kasuje postęp odcinków; panel od 26.11.36 przebudowuje Refreshem przez most `BuildPlayout`).
+  - `GET|POST /api/live/channels/<n>/windows`, `DELETE /api/live/channels/<n>/windows/<id>` – okna nagłej emisji (od 26.11.36, cechy `windows` i `windows_keep`): w oknie kanał bierze sygnał studia jak przy `anytime`, bez wstrzymania; po końcu wraca stan sprzed okna; pole `keep` – jednodniowy harmonogram zastępczy, który panel postawił w legacy dla „zachowaj odcinek” (opis: `docs/API.md` §1 CG Playout).
   - `POST /api/live/channels/<n>/take`, `/continue`, `/out` – ręczne wyzwalanie komend grafiki na antenie danego kanału z poziomu panelu (Quick Take).
   - `GET|POST|PUT|DELETE /api/live/shows` – zarządzanie audycjami LIVE w ErsatzTV (tworzenie plików `.yml`, wyzwalanie skanowania biblioteki, zakładanie Smart Collections).
   - `GET|PUT /api/live/graphics` – odczyt i modyfikacja reguł automatycznej grafiki (`graphics.json`), w tym zdarzeń wtórnych (`secondary`: strony w zadanych chwilach pozycji wybranej po tytule, ścieżce pliku albo starcie, z datami ważności i zatwierdzaniem – `events`, `approval`; zatwierdza tylko administrator panelu).
