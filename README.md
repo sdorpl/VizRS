@@ -353,7 +353,7 @@ Połączenie zakończone 2026-11-16:
 Bieżący stan każdej aplikacji jest w jej `docs/STATUS.md`, plany – w `docs/plany/README.md` (CG System, CG Playout) i `docs/README.md` (CG Artist). W skrócie:
 - **VizRS CG System 26.11.13** – renderer natywny: reszta ruchu (3D, efekty tekstu, pętle, tło) i efektów, pomiar na Ampere A1, `renderer: auto` domyślnie (PLAN-native N3–N5); do decyzji: `.cgpack` w Ruście (A5), usunięcie `/artist` (T3, 3.0), paczka macOS, GTK 4.
 - **VizRS CG Artist 26.11.12** – import `.cgpack` w Ruście (S6/A5, decyzja), ręczne sprawdzenie i podpis paczek Windows/macOS, drobne luki okna; Android później.
-- **VizRS CG Playout 26.11.35** – PLAN-mcr K1–K21 wydany; otwarte Q1 (sloty na żywo z prawdziwym OBS), projekt nagłej emisji live „dziś”, propozycje bez decyzji: ramówka dnia, kreator szablonu dnia, próba ErsatzTV Next (PLAN-mcr §7.3, §8).
+- **VizRS CG Playout 26.11.35** – PLAN-mcr K1–K21 wydany; otwarte Q1 (sloty na żywo z prawdziwym OBS), nagła emisja live „dziś” K22–K24 (do zrobienia: okno przejęcia z datą w CG Playout; K24 „zachowaj odcinek” po K23 – jednodniowy harmonogram alternatywny, decyzja W1), propozycje bez decyzji: ramówka dnia, kreator szablonu dnia, próba ErsatzTV Next (PLAN-mcr §7.3, §8).
 - Plan porządkowania (P0–P4) i plan refaktoryzacji – zakończone.
 
 ## Licencja
