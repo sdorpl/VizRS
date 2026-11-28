@@ -353,7 +353,7 @@ Połączenie zakończone 2026-11-16:
 Bieżący stan każdej aplikacji jest w jej `docs/STATUS.md`, plany – w `docs/plany/README.md` (CG System, CG Playout) i `docs/README.md` (CG Artist). W skrócie:
 - **VizRS CG System 26.11.13** – renderer natywny: reszta ruchu (3D, efekty tekstu, pętle, tło) i efektów, pomiar na Ampere A1, `renderer: auto` domyślnie (PLAN-native N3–N5); do decyzji: `.cgpack` w Ruście (A5), usunięcie `/artist` (T3, 3.0), paczka macOS, GTK 4.
 - **VizRS CG Artist 26.11.12** – import `.cgpack` w Ruście (S6/A5, decyzja), ręczne sprawdzenie i podpis paczek Windows/macOS, drobne luki okna; Android później.
-- **VizRS CG Playout 26.11.36** – PLAN-mcr K1–K24 wydany (26.11.36: nagła emisja live – Refresh zamiast Reset, okno przejęcia z datą, „zachowaj odcinek”); sloty na żywo i nagła emisja z OBS sprawdzone ręcznie (2026-11-28); otwarte: Plex z prawdziwym kontem (Q1); propozycje bez decyzji: ramówka dnia, kreator szablonu dnia (PLAN-mcr §7.3); próba ErsatzTV Next odrzucona 2026-11-28 (legacy ma Next w sobie).
+- **VizRS CG Playout 26.11.36** – PLAN-mcr K1–K24 wydany (26.11.36: nagła emisja live – Refresh zamiast Reset, okno przejęcia z datą, „zachowaj odcinek”); sloty na żywo i nagła emisja z OBS sprawdzone ręcznie (2026-11-28); otwarte: Plex z prawdziwym kontem (Q1); do zrobienia: K25 – kreator szablonu dnia; odłożone: ramówka dnia (PLAN-mcr §7.3), D3 (CG Playout przestaje pisać do legacy); D4 zamknięte; próba ErsatzTV Next odrzucona 2026-11-28 (legacy ma Next w sobie).
 - Plan porządkowania (P0–P4) i plan refaktoryzacji – zakończone.
 
 ## Licencja
